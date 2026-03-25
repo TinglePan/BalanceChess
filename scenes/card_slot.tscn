@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://c6su6j40b72ew"]
+
+[ext_resource type="Script" uid="uid://dhd1gl0dovoot" path="res://scripts/card_slot.gd" id="1_cypty"]
+[ext_resource type="Texture2D" uid="uid://dtl3xj8uddc6b" path="res://assets/sprites/card_slot.png" id="1_mxh2e"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mxh2e"]
+size = Vector2(52, 64)
+
+[node name="CardSlot" type="Node2D" unique_id=1890089415]
+script = ExtResource("1_cypty")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1692891289]
+texture_filter = 1
+texture = ExtResource("1_mxh2e")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=1460881631]
+collision_layer = 2
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=631621258]
+position = Vector2(0, -23)
+shape = SubResource("RectangleShape2D_mxh2e")
+
+[node name="DropAnchor" type="Node2D" parent="." unique_id=790142913]
+position = Vector2(0, -23)

@@ -1,0 +1,68 @@
+[gd_scene format=3 uid="uid://b0h7eedftf4ra"]
+
+[ext_resource type="Script" uid="uid://ddxh1xe0ogk3l" path="res://scripts/tests/test_main.gd" id="1_tbgi4"]
+[ext_resource type="Script" uid="uid://7812iktq375j" path="res://scripts/player_hand.gd" id="4_jyhfs"]
+[ext_resource type="Script" uid="uid://biq3vn2t0t1og" path="res://scripts/deck.gd" id="6_tefeu"]
+[ext_resource type="Texture2D" uid="uid://ddt0t4p4hjj65" path="res://assets/sprites/deck.png" id="7_o6xl0"]
+[ext_resource type="FontFile" uid="uid://enmja4av0exd" path="res://assets/fonts/PatrickHand-Regular.ttf" id="7_tipki"]
+[ext_resource type="PackedScene" uid="uid://canvp4g7kaftc" path="res://scenes/card.tscn" id="8_dyrck"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_tbgi4"]
+size = Vector2(720, 140)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_tefeu"]
+size = Vector2(62, 50)
+
+[node name="Main" type="Node2D" unique_id=628840830]
+script = ExtResource("1_tbgi4")
+
+[node name="Card2" parent="." unique_id=315164889 instance=ExtResource("8_dyrck")]
+position = Vector2(330, 165)
+
+[node name="Card" parent="." unique_id=1572745133 instance=ExtResource("8_dyrck")]
+position = Vector2(592, 252)
+
+[node name="PlayerHand" type="Node2D" parent="." unique_id=1522292156]
+position = Vector2(594, 554)
+script = ExtResource("4_jyhfs")
+
+[node name="Area2D" type="Area2D" parent="PlayerHand" unique_id=1705834927]
+collision_layer = 4
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerHand/Area2D" unique_id=1308571730]
+shape = SubResource("RectangleShape2D_tbgi4")
+
+[node name="Deck" type="Node2D" parent="." unique_id=1536361480]
+position = Vector2(111, 567)
+script = ExtResource("6_tefeu")
+
+[node name="Sprite2D" type="Sprite2D" parent="Deck" unique_id=1619511424]
+texture_filter = 1
+texture = ExtResource("7_o6xl0")
+
+[node name="Area2D" type="Area2D" parent="Deck" unique_id=1956834461]
+collision_layer = 8
+collision_mask = 8
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Deck/Area2D" unique_id=15328816]
+shape = SubResource("RectangleShape2D_tefeu")
+
+[node name="Label" type="Label" parent="Deck" unique_id=2119652437]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = 25.0
+offset_top = -28.0
+offset_right = 30.0
+offset_bottom = -11.0
+grow_horizontal = 0
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("7_tipki")
+theme_override_font_sizes/font_size = 12
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Field" type="Node2D" parent="." unique_id=1015109856]
