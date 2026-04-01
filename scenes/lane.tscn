@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://b0vv3t5uhbx3p"]
+
+[ext_resource type="Script" uid="uid://c35j1x0yufdqr" path="res://scripts/lane.gd" id="1_6c0se"]
+[ext_resource type="PackedScene" uid="uid://c6su6j40b72ew" path="res://scenes/card_slot.tscn" id="2_8qan7"]
+
+[node name="PlayerLane" type="Node2D" unique_id=826776391]
+script = ExtResource("1_6c0se")
+
+[node name="CardSlot" parent="." unique_id=1890089415 instance=ExtResource("2_8qan7")]
+position = Vector2(0, -44)
+scale = Vector2(0.5, 0.5)
+
+[node name="CardSlot2" parent="." unique_id=596658089 instance=ExtResource("2_8qan7")]
+position = Vector2(40, -25)
+scale = Vector2(0.5, 0.5)
+
+[node name="CardSlot3" parent="." unique_id=928546029 instance=ExtResource("2_8qan7")]
+position = Vector2(40, 30)
+scale = Vector2(0.5, 0.5)
+
+[node name="CardSlot4" parent="." unique_id=128452588 instance=ExtResource("2_8qan7")]
+position = Vector2(0, 54)
+scale = Vector2(0.5, 0.5)
+
+[node name="CardSlot5" parent="." unique_id=1911521678 instance=ExtResource("2_8qan7")]
+position = Vector2(-40, 30)
+scale = Vector2(0.5, 0.5)
+
+[node name="CardSlot6" parent="." unique_id=1772116598 instance=ExtResource("2_8qan7")]
+position = Vector2(-40, -25)
+scale = Vector2(0.5, 0.5)

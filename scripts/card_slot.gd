@@ -6,13 +6,23 @@ const Z_INDEX := 0
 const ANIMATION_DURATION := 0.2
 
 
-var card_in_slot: Card = null
-@onready var drop_position := $DropAnchor.global_position as Vector2
+var pawn_scene := preload("res://scenes/Pawn.tscn") as PackedScene
+
+var pawn: Pawn
 
 
 func drop(card: Card, animation_duration: float = ANIMATION_DURATION) -> void:
-	card.animate_move(drop_position, animation_duration)
-	card_in_slot = card
-	card.current_holder = self
-
-
+	add_pawn(card.data)
+#	card.animate_move(drop_position, animation_duration)
+	card.queue_free()
+	
+	
+func add_pawn(data: CardData) -> void:
+	if pawn:
+		push_error("CardSlot already has a pawn: ", pawn.card_data.name)
+		return
+	var new_pawn := pawn_scene.instantiate() as Pawn
+	add_child(new_pawn)
+	new_pawn.global_position = $DropAnchor.global_position
+	pawn = new_pawn
+	pawn.load_card_data(data)

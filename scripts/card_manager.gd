@@ -1,4 +1,5 @@
 extends Node2D
+class_name CardManager
 
 
 var screen_size: Vector2
@@ -14,10 +15,10 @@ var hand_card_size: Vector2
 
 
 func _ready() -> void:
+	GameManager.card_manager = self
 	screen_size = get_viewport().size
-	print("card manager ready")
-	InputManager.mouse_left_button_pressed.connect(on_mouse_left_button_pressed)
-	InputManager.mouse_left_button_released.connect(on_mouse_left_button_released)
+	InputManager.mouse_button_pressed.connect(on_mouse_button_pressed)
+	InputManager.mouse_button_released.connect(on_mouse_button_released)
 
 
 func _process(delta: float) -> void:
@@ -26,22 +27,26 @@ func _process(delta: float) -> void:
 		card_dragging.position = Vector2(clamp(mouse_pos.x, 0, screen_size.x), clamp(mouse_pos.y, 0, screen_size.y))
 
 
-func on_mouse_left_button_pressed():
+func on_mouse_button_pressed(button_index) -> void:
+	if button_index != MouseButton.MOUSE_BUTTON_LEFT:
+		return
 	print("left button pressed")
 	var mouse_pos := get_viewport().get_mouse_position()
-#	var collider := InputManager.raycast(mouse_pos) as CollisionObject2D
-	var collider := InputManager.raycast_with_mask(mouse_pos, Deck.COLLISION_MASK)
-	if collider:
-		if collider.collision_mask & Card.COLLISION_MASK:
-			var card := collider.get_parent() as Card
+	var ui_collider := InputManager.raycast(mouse_pos, InputManager.DEFAULT_COLLISION_LAYER, InputManager.ui_canvas_instance_id)
+	if ui_collider:
+		var object = ui_collider.get_parent()
+		if object is Card:
+			var card := object as Card
 			if card.can_drag:
 				start_drag(card)
-		elif collider.collision_mask & Deck.COLLISION_MASK:
-			var deck := collider.get_parent() as Deck
+		elif object is Deck:
+			var deck := object as Deck
 			deck.deal_card(GameManager.player_hand_ref)
 	
 	
-func on_mouse_left_button_released():
+func on_mouse_button_released(button_index):
+	if button_index != MouseButton.MOUSE_BUTTON_LEFT:
+		return
 	if card_dragging:
 		stop_drag()
 	
@@ -54,17 +59,19 @@ func create_card_at(card_data: CardData, pos: Vector2) -> Card:
 	return card
 	
 	
-func raycast4card_at_mouse() -> Card:
+func raycast4card_at_mouse(canvas_instance_id: int = 0) -> Card:
 	var mouse_pos := get_viewport().get_mouse_position()
-	var collider := InputManager.raycast_with_mask(mouse_pos, Card.COLLISION_MASK)
+	var collider := InputManager.raycast(mouse_pos, InputManager.DEFAULT_COLLISION_LAYER, canvas_instance_id)
 	var card := collider.get_parent() as Card if collider else null
 	return card
 	
 	
 func hover_over(card: Card):
 	if not card_dragging:
-		var topmost_card := raycast4card_at_mouse()
+		var topmost_card := raycast4card_at_mouse(InputManager.ui_canvas_instance_id)
 		if topmost_card == card:
+			if card_hovering and card_hovering != card:
+				card_hovering.toggle_highlight(false)
 			card.toggle_highlight(true)
 			card_hovering = card
 			
@@ -73,7 +80,7 @@ func hover_off(card: Card):
 	if not card_dragging:
 		if card == card_hovering:
 			card.toggle_highlight(false)
-		var topmost_card := raycast4card_at_mouse()
+		var topmost_card := raycast4card_at_mouse(InputManager.ui_canvas_instance_id)
 		if topmost_card and topmost_card != card_hovering:
 			hover_over(topmost_card)
 	
@@ -86,7 +93,7 @@ func start_drag(card: Card):
 func stop_drag():
 	if card_dragging:
 		var mouse_pos := get_viewport().get_mouse_position()
-		var collider := InputManager.raycast_with_mask(mouse_pos, CardSlot.COLLISION_MASK)
+		var collider := InputManager.raycast(mouse_pos)
 		var topmost_card_slot := collider.get_parent() as CardSlot if collider else null
 		if topmost_card_slot:
 			if card_dragging.current_holder is PlayerHand:

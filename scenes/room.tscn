@@ -1,9 +1,14 @@
 [gd_scene format=3 uid="uid://c0ye6yh0i3u7j"]
 
+[ext_resource type="Script" uid="uid://vhbvgljf5i8d" path="res://scripts/room.gd" id="1_14vil"]
 [ext_resource type="Texture2D" uid="uid://cxt2xt3txq5qm" path="res://assets/sprites/9patch_rect.png" id="1_ffxv4"]
-[ext_resource type="PackedScene" uid="uid://c6su6j40b72ew" path="res://scenes/card_slot.tscn" id="2_85yof"]
+[ext_resource type="PackedScene" uid="uid://b0vv3t5uhbx3p" path="res://scenes/lane.tscn" id="3_jxe34"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_85yof"]
+size = Vector2(284, 160)
 
 [node name="Room" type="Node2D" unique_id=432878979]
+script = ExtResource("1_14vil")
 
 [node name="Outline" type="NinePatchRect" parent="." unique_id=1545979300]
 texture_filter = 1
@@ -12,10 +17,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -71.0
-offset_top = -140.0
-offset_right = 71.0
-offset_bottom = 140.0
+offset_left = -142.0
+offset_top = -84.0
+offset_right = 142.0
+offset_bottom = 76.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("1_ffxv4")
@@ -25,54 +30,19 @@ patch_margin_top = 4
 patch_margin_right = 4
 patch_margin_bottom = 4
 
-[node name="PlayerLane" type="Node2D" parent="." unique_id=1301271331]
-position = Vector2(-34, -88)
+[node name="PlayerLane" parent="." unique_id=826776391 instance=ExtResource("3_jxe34")]
+position = Vector2(-72, 0)
 
-[node name="CardSlot" parent="PlayerLane" unique_id=1890089415 instance=ExtResource("2_85yof")]
-scale = Vector2(0.5, 0.5)
+[node name="EnemyLane" parent="." unique_id=55940230 instance=ExtResource("3_jxe34")]
+position = Vector2(72, 0)
 
-[node name="CardSlot2" parent="PlayerLane" unique_id=1328124769 instance=ExtResource("2_85yof")]
-position = Vector2(0, 40)
-scale = Vector2(0.5, 0.5)
+[node name="Area2D" type="Area2D" parent="." unique_id=2088746820]
+visible = false
+collision_layer = 0
+collision_mask = 0
+monitoring = false
+monitorable = false
 
-[node name="CardSlot3" parent="PlayerLane" unique_id=65227677 instance=ExtResource("2_85yof")]
-position = Vector2(0, 80)
-scale = Vector2(0.5, 0.5)
-
-[node name="CardSlot4" parent="PlayerLane" unique_id=502501055 instance=ExtResource("2_85yof")]
-position = Vector2(0, 120)
-scale = Vector2(0.5, 0.5)
-
-[node name="CardSlot5" parent="PlayerLane" unique_id=569040268 instance=ExtResource("2_85yof")]
-position = Vector2(0, 160)
-scale = Vector2(0.5, 0.5)
-
-[node name="CardSlot6" parent="PlayerLane" unique_id=1772745707 instance=ExtResource("2_85yof")]
-position = Vector2(0, 200)
-scale = Vector2(0.5, 0.5)
-
-[node name="EnemyLane" type="Node2D" parent="." unique_id=1008320063]
-position = Vector2(34, -88)
-
-[node name="CardSlot" parent="EnemyLane" unique_id=1375630373 instance=ExtResource("2_85yof")]
-scale = Vector2(0.5, 0.5)
-
-[node name="CardSlot2" parent="EnemyLane" unique_id=1046630411 instance=ExtResource("2_85yof")]
-position = Vector2(0, 40)
-scale = Vector2(0.5, 0.5)
-
-[node name="CardSlot3" parent="EnemyLane" unique_id=1325854952 instance=ExtResource("2_85yof")]
-position = Vector2(0, 80)
-scale = Vector2(0.5, 0.5)
-
-[node name="CardSlot4" parent="EnemyLane" unique_id=874764957 instance=ExtResource("2_85yof")]
-position = Vector2(0, 120)
-scale = Vector2(0.5, 0.5)
-
-[node name="CardSlot5" parent="EnemyLane" unique_id=1920634265 instance=ExtResource("2_85yof")]
-position = Vector2(0, 160)
-scale = Vector2(0.5, 0.5)
-
-[node name="CardSlot6" parent="EnemyLane" unique_id=1146594421 instance=ExtResource("2_85yof")]
-position = Vector2(0, 200)
-scale = Vector2(0.5, 0.5)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1368401925]
+position = Vector2(0, -4)
+shape = SubResource("RectangleShape2D_85yof")

@@ -3,9 +3,14 @@
 [ext_resource type="Script" uid="uid://ddxh1xe0ogk3l" path="res://scripts/tests/test_main.gd" id="1_tbgi4"]
 [ext_resource type="Script" uid="uid://7812iktq375j" path="res://scripts/player_hand.gd" id="4_jyhfs"]
 [ext_resource type="Script" uid="uid://biq3vn2t0t1og" path="res://scripts/deck.gd" id="6_tefeu"]
+[ext_resource type="Script" uid="uid://cesev8grh373d" path="res://scripts/field.gd" id="7_85g3d"]
+[ext_resource type="Script" uid="uid://inm7w4agops3" path="res://scripts/main_camera.gd" id="7_choun"]
+[ext_resource type="Texture2D" uid="uid://dm21s83d56ejy" path="res://assets/sprites/grave.png" id="7_eb6dy"]
 [ext_resource type="Texture2D" uid="uid://ddt0t4p4hjj65" path="res://assets/sprites/deck.png" id="7_o6xl0"]
 [ext_resource type="FontFile" uid="uid://enmja4av0exd" path="res://assets/fonts/PatrickHand-Regular.ttf" id="7_tipki"]
-[ext_resource type="PackedScene" uid="uid://canvp4g7kaftc" path="res://scenes/card.tscn" id="8_dyrck"]
+[ext_resource type="Texture2D" uid="uid://urox5vsxc3mg" path="res://assets/sprites/question.png" id="7_trceg"]
+[ext_resource type="Script" uid="uid://b7m7kbu52kebx" path="res://scripts/card_manager.gd" id="7_ya4ey"]
+[ext_resource type="Texture2D" uid="uid://baqhf7l2dd5t2" path="res://assets/sprites/trash.png" id="8_choun"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_tbgi4"]
 size = Vector2(720, 140)
@@ -16,39 +21,38 @@ size = Vector2(62, 50)
 [node name="Main" type="Node2D" unique_id=628840830]
 script = ExtResource("1_tbgi4")
 
-[node name="Card2" parent="." unique_id=315164889 instance=ExtResource("8_dyrck")]
-position = Vector2(330, 165)
+[node name="Field" type="Node2D" parent="." unique_id=1015109856]
+position = Vector2(576, 324)
+script = ExtResource("7_85g3d")
 
-[node name="Card" parent="." unique_id=1572745133 instance=ExtResource("8_dyrck")]
-position = Vector2(592, 252)
+[node name="TopAnchor" type="Node2D" parent="Field" unique_id=1083499801]
+position = Vector2(0, -200)
 
-[node name="PlayerHand" type="Node2D" parent="." unique_id=1522292156]
-position = Vector2(594, 554)
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1050990024]
+
+[node name="PlayerHand" type="Node2D" parent="CanvasLayer" unique_id=1522292156]
+position = Vector2(580, 554)
 script = ExtResource("4_jyhfs")
 
-[node name="Area2D" type="Area2D" parent="PlayerHand" unique_id=1705834927]
-collision_layer = 4
-collision_mask = 4
+[node name="Area2D" type="Area2D" parent="CanvasLayer/PlayerHand" unique_id=1705834927]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerHand/Area2D" unique_id=1308571730]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CanvasLayer/PlayerHand/Area2D" unique_id=1308571730]
 shape = SubResource("RectangleShape2D_tbgi4")
 
-[node name="Deck" type="Node2D" parent="." unique_id=1536361480]
-position = Vector2(111, 567)
+[node name="MainDeck" type="Node2D" parent="CanvasLayer" unique_id=1536361480]
+position = Vector2(68, 518)
 script = ExtResource("6_tefeu")
 
-[node name="Sprite2D" type="Sprite2D" parent="Deck" unique_id=1619511424]
+[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/MainDeck" unique_id=1619511424]
 texture_filter = 1
 texture = ExtResource("7_o6xl0")
 
-[node name="Area2D" type="Area2D" parent="Deck" unique_id=1956834461]
-collision_layer = 8
-collision_mask = 8
+[node name="Area2D" type="Area2D" parent="CanvasLayer/MainDeck" unique_id=1956834461]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Deck/Area2D" unique_id=15328816]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CanvasLayer/MainDeck/Area2D" unique_id=15328816]
 shape = SubResource("RectangleShape2D_tefeu")
 
-[node name="Label" type="Label" parent="Deck" unique_id=2119652437]
+[node name="Label" type="Label" parent="CanvasLayer/MainDeck" unique_id=2119652437]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -65,4 +69,99 @@ text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Field" type="Node2D" parent="." unique_id=1015109856]
+[node name="Encounter" type="Node2D" parent="CanvasLayer" unique_id=273693875]
+position = Vector2(152, 518)
+script = ExtResource("6_tefeu")
+
+[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/Encounter" unique_id=134817669]
+texture_filter = 1
+texture = ExtResource("7_trceg")
+
+[node name="Area2D" type="Area2D" parent="CanvasLayer/Encounter" unique_id=1462998571]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CanvasLayer/Encounter/Area2D" unique_id=1131760265]
+shape = SubResource("RectangleShape2D_tefeu")
+
+[node name="Label" type="Label" parent="CanvasLayer/Encounter" unique_id=192784073]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = 25.0
+offset_top = -28.0
+offset_right = 30.0
+offset_bottom = -11.0
+grow_horizontal = 0
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("7_tipki")
+theme_override_font_sizes/font_size = 12
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Grave" type="Node2D" parent="CanvasLayer" unique_id=1301171646]
+position = Vector2(68, 590)
+script = ExtResource("6_tefeu")
+
+[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/Grave" unique_id=263279248]
+texture_filter = 1
+texture = ExtResource("7_eb6dy")
+
+[node name="Area2D" type="Area2D" parent="CanvasLayer/Grave" unique_id=251825647]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CanvasLayer/Grave/Area2D" unique_id=2055484110]
+shape = SubResource("RectangleShape2D_tefeu")
+
+[node name="Label" type="Label" parent="CanvasLayer/Grave" unique_id=391968649]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = 25.0
+offset_top = -28.0
+offset_right = 30.0
+offset_bottom = -11.0
+grow_horizontal = 0
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("7_tipki")
+theme_override_font_sizes/font_size = 12
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Discard" type="Node2D" parent="CanvasLayer" unique_id=520520459]
+position = Vector2(152, 590)
+script = ExtResource("6_tefeu")
+
+[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/Discard" unique_id=1953140041]
+texture_filter = 1
+texture = ExtResource("8_choun")
+
+[node name="Area2D" type="Area2D" parent="CanvasLayer/Discard" unique_id=1463961987]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CanvasLayer/Discard/Area2D" unique_id=1571405948]
+shape = SubResource("RectangleShape2D_tefeu")
+
+[node name="Label" type="Label" parent="CanvasLayer/Discard" unique_id=305529195]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = 25.0
+offset_top = -28.0
+offset_right = 30.0
+offset_bottom = -11.0
+grow_horizontal = 0
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("7_tipki")
+theme_override_font_sizes/font_size = 12
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CardManager" type="Node2D" parent="CanvasLayer" unique_id=1196650933]
+script = ExtResource("7_ya4ey")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=239719047]
+offset = Vector2(576, 324)
+script = ExtResource("7_choun")

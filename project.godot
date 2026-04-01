@@ -21,7 +21,6 @@ config/icon="res://assets/sprites/icon.svg"
 
 [autoload]
 
-CardManager="*uid://b7m7kbu52kebx"
 InputManager="*uid://c7piqm4chliw7"
 GameManager="*uid://bjh5inxhoc8i4"
 

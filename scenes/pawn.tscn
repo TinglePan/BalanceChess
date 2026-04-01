@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://c3mu0dlhp2won"]
+
+[ext_resource type="Script" uid="uid://c3isorq0pc1ps" path="res://scripts/pawn.gd" id="1_bab8k"]
+[ext_resource type="Texture2D" uid="uid://udm8p8fl0dx7" path="res://assets/sprites/fused_slime.png" id="2_ccfo0"]
+[ext_resource type="FontFile" uid="uid://enmja4av0exd" path="res://assets/fonts/PatrickHand-Regular.ttf" id="3_eqwak"]
+
+[node name="Pawn" type="Node2D" unique_id=247650934]
+script = ExtResource("1_bab8k")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=634171780]
+texture_filter = 1
+texture = ExtResource("2_ccfo0")
+
+[node name="Rank" type="Label" parent="." unique_id=32795574]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -3.0
+offset_top = -47.0
+offset_right = 3.0
+offset_bottom = -25.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("3_eqwak")
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1
