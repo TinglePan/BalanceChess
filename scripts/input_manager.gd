@@ -15,7 +15,9 @@ const DEFAULT_COLLISION_LAYER := 1
 
 var _is_dragging := false
 var _drag_button := MouseButton.MOUSE_BUTTON_NONE
-var ui_canvas_instance_id: int 
+var ui_canvas_instance_id: int
+
+
 
 
 func _input(event: InputEvent) -> void:

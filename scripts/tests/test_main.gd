@@ -17,7 +17,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if not has_started:
 		has_started = true
-		$Field.set_grid_dimensions(1, 1)
+		$Field.set_grid_dimensions(3, 3)
 		main_deck.add_card_data(CardDb.CARDS["defect"])
 		main_deck.add_card_data(CardDb.CARDS["mob_slime"])
 		main_deck.add_card_data(CardDb.CARDS["mob_slime"])

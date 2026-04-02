@@ -1,15 +1,15 @@
 [gd_scene format=3 uid="uid://b1igf43xdvbjk"]
 
-[ext_resource type="Texture2D" uid="uid://dtl3xj8uddc6b" path="res://assets/sprites/card_slot.png" id="1_wuv0r"]
+[ext_resource type="Texture2D" uid="uid://dtl3xj8uddc6b" path="res://assets/sprites/card_slot.png" id="1_fy00k"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7a6oe"]
 size = Vector2(52, 80)
 
-[node name="BonusCell" type="Node2D" unique_id=1255802802]
+[node name="BonusSlot" type="Node2D" unique_id=1255802802]
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=816959123]
 texture_filter = 1
-texture = ExtResource("1_wuv0r")
+texture = ExtResource("1_fy00k")
 
 [node name="Area2D" type="Area2D" parent="." unique_id=1127755049]
 
