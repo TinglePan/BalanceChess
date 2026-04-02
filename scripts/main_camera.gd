@@ -6,8 +6,10 @@ const zoom_min := Vector2(1, 1)
 const zoom_max := Vector2(2, 2)
 const zoom_speed := 0.1
 
-@export var drag_button := MOUSE_BUTTON_RIGHT
+const DRAG_BUTTON := MOUSE_BUTTON_RIGHT
 
+
+var dragging: bool = false
 var field: Field
 
 
@@ -15,18 +17,39 @@ func _ready() -> void:
 	field = get_parent().get_node("Field") as Field
 	zoom = clamp_zoom_to_boundary(zoom)
 	clamp_to_field()
-	InputManager.mouse_wheel_up.connect(on_mouse_wheel_up)
-	InputManager.mouse_wheel_down.connect(on_mouse_wheel_down)
-	InputManager.mouse_dragged.connect(on_mouse_dragged)
+	InputManager.register_mouse_button_event_handler(DRAG_BUTTON, null, on_drag_button_event)
+	InputManager.register_mouse_motion_event_handler(DRAG_BUTTON, on_mouse_motion)
+	InputManager.register_mouse_button_event_handler(MouseButton.MOUSE_BUTTON_WHEEL_DOWN, null, on_mouse_wheel_down)
+	InputManager.register_mouse_button_event_handler(MouseButton.MOUSE_BUTTON_WHEEL_UP, null, on_mouse_wheel_up)
+
+
+func _exit_tree() -> void:
+	InputManager.deregister_mouse_button_event_handler(DRAG_BUTTON, null, on_drag_button_event)
+	InputManager.deregister_mouse_motion_event_handler(DRAG_BUTTON, on_mouse_motion)
+	InputManager.deregister_mouse_button_event_handler(MouseButton.MOUSE_BUTTON_WHEEL_DOWN, null, on_mouse_wheel_down)
+	InputManager.deregister_mouse_button_event_handler(MouseButton.MOUSE_BUTTON_WHEEL_UP, null, on_mouse_wheel_up)
 	
 
-func on_mouse_wheel_up():
+func on_mouse_wheel_up(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
 	apply_zoom(zoom_speed)
+	return false
 	
 	
-	
-func on_mouse_wheel_down():
+func on_mouse_wheel_down(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
 	apply_zoom(-zoom_speed)
+	return false
+	
+	
+func on_drag_button_event(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
+	dragging = event.pressed
+	return false
+
+
+func on_mouse_motion(event: InputEventMouseMotion) -> bool:
+	if not dragging:
+		return true
+	drag(event.relative)
+	return false
 
 
 func apply_zoom(delta: float) -> void:
@@ -101,9 +124,3 @@ func clamp_view_center(center: Vector2, camera_zoom: Vector2) -> Vector2:
 		clamped_center.y = clampf(center.y, boundary.position.y + half_view_size.y, boundary_end.y - half_view_size.y)
 
 	return clamped_center
-
-
-func on_mouse_dragged(button_index: int, delta: Vector2, _position: Vector2) -> void:
-	if button_index != drag_button:
-		return
-	drag(delta)

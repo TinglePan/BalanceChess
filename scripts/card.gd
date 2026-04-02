@@ -6,6 +6,7 @@ const COLLISION_MASK := 1
 const NORMAL_Z_INDEX := 1
 const HIGHLIGHT_Z_INDEX := NORMAL_Z_INDEX + 100
 const DRAG_Z_INDEX := HIGHLIGHT_Z_INDEX + 100
+const DRAG_BUTTON := MOUSE_BUTTON_LEFT
 
 
 var data: CardData
@@ -19,6 +20,7 @@ func _ready() -> void:
 	var collision_shape := $Area2D/CollisionShape2D
 	var rect_shape := collision_shape.shape as RectangleShape2D
 	area_size = rect_shape.size * collision_shape.global_scale.abs()
+	InputManager.register_mouse_button_event_handler(DRAG_BUTTON, $Area2D, _on_mouse_button_event)
 	
 
 func _on_area_2d_mouse_entered():
@@ -54,3 +56,10 @@ func on_start_drag():
 	drag_start_pos = global_position
 	scale = Vector2(1.1, 1.1) # Example of dragging by scaling up the card
 	z_index = DRAG_Z_INDEX
+
+
+func _on_mouse_button_event(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
+	if event.pressed and can_drag:
+		GameManager.card_manager.start_drag(self)
+		return true
+	return false

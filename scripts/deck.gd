@@ -3,17 +3,20 @@ class_name Deck
 
 
 const ANIMATION_DURATION := 0.2
+const DEAL_CARD_BUTTON := MOUSE_BUTTON_LEFT
 
 var card_data_list := []
 
 
 func _ready() -> void:
 	GameManager.deck_ref = self
+	InputManager.register_mouse_button_event_handler(DEAL_CARD_BUTTON, $Area2D, _on_deal_card_button_event)
 	
 	
 func _exit_tree() -> void:
 	if GameManager.deck_ref == self:
 		GameManager.deck_ref = null
+		InputManager.deregister_mouse_button_event_handler(DEAL_CARD_BUTTON, $Area2D, _on_deal_card_button_event)
 
 
 func add_card_data(card_data: CardData):
@@ -40,3 +43,10 @@ func deal_card(target: Node2D, index: int = 0) -> void:
 
 func update_count_label():
 	$Label.text = str(card_data_list.size())
+	
+	
+func _on_deal_card_button_event(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
+	if event.is_pressed() and card_data_list.size() > 0:
+		deal_card(GameManager.player_hand_ref)
+		return true
+	return false
