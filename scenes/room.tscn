@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://vhbvgljf5i8d" path="res://scripts/room.gd" id="1_14vil"]
 [ext_resource type="Texture2D" uid="uid://cxt2xt3txq5qm" path="res://assets/sprites/9patch_rect.png" id="1_ffxv4"]
 [ext_resource type="PackedScene" uid="uid://b0vv3t5uhbx3p" path="res://scenes/lane.tscn" id="3_jxe34"]
+[ext_resource type="FontFile" uid="uid://enmja4av0exd" path="res://assets/fonts/PatrickHand-Regular.ttf" id="4_14vil"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_85yof"]
 size = Vector2(284, 160)
@@ -32,14 +33,35 @@ patch_margin_bottom = 4
 
 [node name="PlayerLane" parent="." unique_id=826776391 instance=ExtResource("3_jxe34")]
 z_index = 1
-position = Vector2(-72, 0)
+position = Vector2(-72, 8)
 
 [node name="EnemyLane" parent="." unique_id=55940230 instance=ExtResource("3_jxe34")]
 z_index = 1
-position = Vector2(72, 0)
+position = Vector2(72, 8)
 
 [node name="Area2D" type="Area2D" parent="." unique_id=2088746820]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1368401925]
 position = Vector2(0, -4)
 shape = SubResource("RectangleShape2D_85yof")
+
+[node name="Label" type="Label" parent="." unique_id=486414963]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -5.0
+offset_top = -19.5
+offset_right = 5.0
+offset_bottom = 19.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("4_14vil")
+theme_override_font_sizes/font_size = 28
+text = "1"
+horizontal_alignment = 1
+vertical_alignment = 1

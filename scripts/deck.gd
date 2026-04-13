@@ -9,19 +9,38 @@ var card_data_list := []
 
 
 func _ready() -> void:
-	GameManager.deck_ref = self
 	InputManager.register_mouse_button_event_handler(DEAL_CARD_BUTTON, $Area2D, _on_deal_card_button_event)
+	update_count_label()
 	
 	
 func _exit_tree() -> void:
-	if GameManager.deck_ref == self:
-		GameManager.deck_ref = null
-		InputManager.deregister_mouse_button_event_handler(DEAL_CARD_BUTTON, $Area2D, _on_deal_card_button_event)
+	InputManager.deregister_mouse_button_event_handler(DEAL_CARD_BUTTON, $Area2D, _on_deal_card_button_event)
 
 
-func add_card_data(card_data: CardData):
-	card_data_list.append(card_data)
+func add_card_data(card_data: CardData, index: int = 0):
+	var insert_index := index
+	if index < 0:
+		insert_index = card_data_list.size() + index + 1
+		insert_index = max(insert_index, 0)
+	card_data_list.insert(insert_index, card_data)
 	update_count_label()
+
+
+func shuffle() -> void:
+	card_data_list.shuffle()
+
+
+func shuffle_to(deck: Deck) -> void:
+	if deck == null:
+		push_error("Target deck is null")
+		return
+	if deck == self:
+		shuffle()
+		return
+	deck.card_data_list.append_array(card_data_list)
+	card_data_list.clear()
+	update_count_label()
+	deck.shuffle()
 
 
 func deal_card(target: Node2D, index: int = 0) -> void:
@@ -33,10 +52,10 @@ func deal_card(target: Node2D, index: int = 0) -> void:
 		return
 	var card_data = card_data_list.pop_at(index)
 	if target is PlayerHand:
-		var card = GameManager.card_manager.create_card_at(card_data, global_position)
+		var card = GameManager.board.card_manager.create_card_at(card_data, global_position)
 		target.add_card(card, ANIMATION_DURATION)
 	elif target is CardSlot:
-		var card = GameManager.card_manager.create_card_at(card_data, global_position)
+		var card = GameManager.board.card_manager.create_card_at(card_data, global_position)
 		target.drop(card, ANIMATION_DURATION)
 	update_count_label()
 
@@ -47,6 +66,6 @@ func update_count_label():
 	
 func _on_deal_card_button_event(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
 	if event.is_pressed() and card_data_list.size() > 0:
-		deal_card(GameManager.player_hand_ref)
+		deal_card(GameManager.board.player_hand)
 		return true
 	return false

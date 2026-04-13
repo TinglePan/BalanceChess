@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://b0h7eedftf4ra"]
 
-[ext_resource type="Script" uid="uid://ddxh1xe0ogk3l" path="res://scripts/tests/test_main.gd" id="1_tbgi4"]
+[ext_resource type="Script" uid="uid://pxw74nc3m064" path="res://scripts/board.gd" id="1_ya4ey"]
 [ext_resource type="Script" uid="uid://7812iktq375j" path="res://scripts/player_hand.gd" id="4_jyhfs"]
 [ext_resource type="Script" uid="uid://biq3vn2t0t1og" path="res://scripts/deck.gd" id="6_tefeu"]
 [ext_resource type="Script" uid="uid://cesev8grh373d" path="res://scripts/field.gd" id="7_85g3d"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://urox5vsxc3mg" path="res://assets/sprites/question.png" id="7_trceg"]
 [ext_resource type="Script" uid="uid://b7m7kbu52kebx" path="res://scripts/card_manager.gd" id="7_ya4ey"]
 [ext_resource type="Texture2D" uid="uid://baqhf7l2dd5t2" path="res://assets/sprites/trash.png" id="8_choun"]
+[ext_resource type="Script" uid="uid://ddxh1xe0ogk3l" path="res://scripts/tests/test_main.gd" id="12_eb6dy"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_tbgi4"]
 size = Vector2(720, 140)
@@ -18,8 +19,16 @@ size = Vector2(720, 140)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_tefeu"]
 size = Vector2(62, 50)
 
-[node name="Main" type="Node2D" unique_id=628840830]
-script = ExtResource("1_tbgi4")
+[node name="Board" type="Node2D" unique_id=628840830 node_paths=PackedStringArray("player_hand", "field", "main_camera", "card_manager", "main_deck", "graveyard", "discard_pile", "encounter_deck")]
+script = ExtResource("1_ya4ey")
+player_hand = NodePath("CanvasLayer/PlayerHand")
+field = NodePath("Field")
+main_camera = NodePath("Camera2D")
+card_manager = NodePath("CanvasLayer/CardManager")
+main_deck = NodePath("CanvasLayer/Decks/MainDeck")
+graveyard = NodePath("CanvasLayer/Decks/Grave")
+discard_pile = NodePath("CanvasLayer/Decks/Discard")
+encounter_deck = NodePath("CanvasLayer/Decks/Encounter")
 
 [node name="Field" type="Node2D" parent="." unique_id=1015109856]
 position = Vector2(576, 324)
@@ -39,20 +48,43 @@ script = ExtResource("4_jyhfs")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CanvasLayer/PlayerHand/Area2D" unique_id=1308571730]
 shape = SubResource("RectangleShape2D_tbgi4")
 
-[node name="MainDeck" type="Node2D" parent="CanvasLayer" unique_id=1536361480]
-position = Vector2(68, 518)
+[node name="CardManager" type="Node2D" parent="CanvasLayer" unique_id=1196650933]
+script = ExtResource("7_ya4ey")
+
+[node name="Buttons" type="Node2D" parent="CanvasLayer" unique_id=1182507613]
+position = Vector2(1052, 504)
+
+[node name="Button" type="Button" parent="CanvasLayer/Buttons" unique_id=1801967210]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -48.0
+offset_top = -15.5
+offset_right = 48.0
+offset_bottom = 15.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "Start Battle"
+
+[node name="Decks" type="Node2D" parent="CanvasLayer" unique_id=1389367003]
+position = Vector2(110, 554)
+
+[node name="MainDeck" type="Node2D" parent="CanvasLayer/Decks" unique_id=1536361480]
+position = Vector2(-42, -36)
 script = ExtResource("6_tefeu")
 
-[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/MainDeck" unique_id=1619511424]
+[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/Decks/MainDeck" unique_id=1619511424]
 texture_filter = 1
 texture = ExtResource("7_o6xl0")
 
-[node name="Area2D" type="Area2D" parent="CanvasLayer/MainDeck" unique_id=1956834461]
+[node name="Area2D" type="Area2D" parent="CanvasLayer/Decks/MainDeck" unique_id=1956834461]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CanvasLayer/MainDeck/Area2D" unique_id=15328816]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CanvasLayer/Decks/MainDeck/Area2D" unique_id=15328816]
 shape = SubResource("RectangleShape2D_tefeu")
 
-[node name="Label" type="Label" parent="CanvasLayer/MainDeck" unique_id=2119652437]
+[node name="Label" type="Label" parent="CanvasLayer/Decks/MainDeck" unique_id=2119652437]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -69,20 +101,20 @@ text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Encounter" type="Node2D" parent="CanvasLayer" unique_id=273693875]
-position = Vector2(152, 518)
+[node name="Encounter" type="Node2D" parent="CanvasLayer/Decks" unique_id=273693875]
+position = Vector2(42, -36)
 script = ExtResource("6_tefeu")
 
-[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/Encounter" unique_id=134817669]
+[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/Decks/Encounter" unique_id=134817669]
 texture_filter = 1
 texture = ExtResource("7_trceg")
 
-[node name="Area2D" type="Area2D" parent="CanvasLayer/Encounter" unique_id=1462998571]
+[node name="Area2D" type="Area2D" parent="CanvasLayer/Decks/Encounter" unique_id=1462998571]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CanvasLayer/Encounter/Area2D" unique_id=1131760265]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CanvasLayer/Decks/Encounter/Area2D" unique_id=1131760265]
 shape = SubResource("RectangleShape2D_tefeu")
 
-[node name="Label" type="Label" parent="CanvasLayer/Encounter" unique_id=192784073]
+[node name="Label" type="Label" parent="CanvasLayer/Decks/Encounter" unique_id=192784073]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -99,20 +131,20 @@ text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Grave" type="Node2D" parent="CanvasLayer" unique_id=1301171646]
-position = Vector2(68, 590)
+[node name="Grave" type="Node2D" parent="CanvasLayer/Decks" unique_id=1301171646]
+position = Vector2(-42, 36)
 script = ExtResource("6_tefeu")
 
-[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/Grave" unique_id=263279248]
+[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/Decks/Grave" unique_id=263279248]
 texture_filter = 1
 texture = ExtResource("7_eb6dy")
 
-[node name="Area2D" type="Area2D" parent="CanvasLayer/Grave" unique_id=251825647]
+[node name="Area2D" type="Area2D" parent="CanvasLayer/Decks/Grave" unique_id=251825647]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CanvasLayer/Grave/Area2D" unique_id=2055484110]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CanvasLayer/Decks/Grave/Area2D" unique_id=2055484110]
 shape = SubResource("RectangleShape2D_tefeu")
 
-[node name="Label" type="Label" parent="CanvasLayer/Grave" unique_id=391968649]
+[node name="Label" type="Label" parent="CanvasLayer/Decks/Grave" unique_id=391968649]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -129,20 +161,20 @@ text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Discard" type="Node2D" parent="CanvasLayer" unique_id=520520459]
-position = Vector2(152, 590)
+[node name="Discard" type="Node2D" parent="CanvasLayer/Decks" unique_id=520520459]
+position = Vector2(42, 36)
 script = ExtResource("6_tefeu")
 
-[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/Discard" unique_id=1953140041]
+[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/Decks/Discard" unique_id=1953140041]
 texture_filter = 1
 texture = ExtResource("8_choun")
 
-[node name="Area2D" type="Area2D" parent="CanvasLayer/Discard" unique_id=1463961987]
+[node name="Area2D" type="Area2D" parent="CanvasLayer/Decks/Discard" unique_id=1463961987]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CanvasLayer/Discard/Area2D" unique_id=1571405948]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CanvasLayer/Decks/Discard/Area2D" unique_id=1571405948]
 shape = SubResource("RectangleShape2D_tefeu")
 
-[node name="Label" type="Label" parent="CanvasLayer/Discard" unique_id=305529195]
+[node name="Label" type="Label" parent="CanvasLayer/Decks/Discard" unique_id=305529195]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -158,10 +190,12 @@ theme_override_font_sizes/font_size = 12
 text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="CardManager" type="Node2D" parent="CanvasLayer" unique_id=1196650933]
-script = ExtResource("7_ya4ey")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=239719047]
 offset = Vector2(576, 324)
 script = ExtResource("7_choun")
+
+[node name="Test" type="Node" parent="." unique_id=1844940606]
+script = ExtResource("12_eb6dy")
+
+[connection signal="pressed" from="CanvasLayer/Buttons/Button" to="Field" method="_on_button_pressed"]

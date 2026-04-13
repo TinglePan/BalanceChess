@@ -2,21 +2,22 @@ extends Camera2D
 class_name MainCamera
 
 
-const zoom_min := Vector2(1, 1)
+const zoom_min := Vector2(0.5, 0.5)
 const zoom_max := Vector2(2, 2)
 const zoom_speed := 0.1
 
 const DRAG_BUTTON := MOUSE_BUTTON_RIGHT
+const boundary_margin := 50.0
 
 
 var dragging: bool = false
 var field: Field
+var initial_zoom_scalar: float = 1.0
 
 
 func _ready() -> void:
 	field = get_parent().get_node("Field") as Field
-	zoom = clamp_zoom_to_boundary(zoom)
-	clamp_to_field()
+	apply_initial_fit_zoom()
 	InputManager.register_mouse_button_event_handler(DRAG_BUTTON, null, on_drag_button_event)
 	InputManager.register_mouse_motion_event_handler(DRAG_BUTTON, on_mouse_motion)
 	InputManager.register_mouse_button_event_handler(MouseButton.MOUSE_BUTTON_WHEEL_DOWN, null, on_mouse_wheel_down)
@@ -53,7 +54,16 @@ func on_mouse_motion(event: InputEventMouseMotion) -> bool:
 
 
 func apply_zoom(delta: float) -> void:
-	zoom = clamp_zoom_to_boundary(zoom + Vector2.ONE * delta)
+	var current_zoom_scalar: float = zoom.x
+	var target_zoom_scalar: float = current_zoom_scalar + delta
+	var current_offset_from_initial: float = current_zoom_scalar - initial_zoom_scalar
+	var target_offset_from_initial: float = target_zoom_scalar - initial_zoom_scalar
+
+	# Snap only when the step crosses initial zoom from one side to the other.
+	if current_offset_from_initial * target_offset_from_initial < 0.0:
+		target_zoom_scalar = initial_zoom_scalar
+
+	zoom = clamp_zoom_to_boundary(Vector2.ONE * target_zoom_scalar)
 	clamp_to_field()
 
 
@@ -61,21 +71,44 @@ func drag(delta: Vector2) -> void:
 	set_camera_center(clamp_view_center(get_camera_center() - delta / zoom, zoom))
 
 
+func apply_initial_fit_zoom() -> void:
+	var fit_zoom: float = get_fit_zoom_scalar()
+	zoom = clamp_zoom_to_boundary(Vector2.ONE * fit_zoom)
+	initial_zoom_scalar = zoom.x
+	clamp_to_field()
+
+
+func get_fit_zoom_scalar() -> float:
+	var min_allowed_zoom := get_min_allowed_zoom()
+	var boundary_fit_zoom: float = maxf(min_allowed_zoom.x, min_allowed_zoom.y)
+	var max_zoom_limit: float = maxf(zoom_max.x, zoom_max.y)
+	return minf(boundary_fit_zoom, max_zoom_limit)
+
+
 func clamp_zoom_to_boundary(next_zoom: Vector2) -> Vector2:
 	var min_allowed_zoom := get_min_allowed_zoom()
-	var max_allowed_zoom := Vector2(
-		max(zoom_max.x, min_allowed_zoom.x),
-		max(zoom_max.y, min_allowed_zoom.y)
-	)
-	return Vector2(
-		clampf(next_zoom.x, min_allowed_zoom.x, max_allowed_zoom.x),
-		clampf(next_zoom.y, min_allowed_zoom.y, max_allowed_zoom.y)
+	var boundary_min_zoom: float = maxf(min_allowed_zoom.x, min_allowed_zoom.y)
+	var max_zoom_limit: float = maxf(zoom_max.x, zoom_max.y)
+	var uniform_min_zoom: float = minf(boundary_min_zoom, max_zoom_limit)
+	var uniform_max_zoom: float = max_zoom_limit
+	var requested_zoom: float = (next_zoom.x + next_zoom.y) * 0.5
+	var clamped_zoom: float = clampf(requested_zoom, uniform_min_zoom, uniform_max_zoom)
+	return Vector2.ONE * clamped_zoom
+
+
+func get_effective_boundary() -> Rect2:
+	var boundary := field.get_boundary()
+	if boundary_margin <= 0.0:
+		return boundary
+	return Rect2(
+		boundary.position - Vector2.ONE * boundary_margin,
+		boundary.size + Vector2.ONE * boundary_margin * 2.0
 	)
 
 
 func get_min_allowed_zoom() -> Vector2:
 	var min_allowed_zoom := zoom_min
-	var boundary := field.get_boundary()
+	var boundary := get_effective_boundary()
 	var viewport_size := get_viewport().get_visible_rect().size
 
 	if boundary.size.x > 0.0:
@@ -107,7 +140,7 @@ func clamp_to_field() -> void:
 
 
 func clamp_view_center(center: Vector2, camera_zoom: Vector2) -> Vector2:
-	var boundary := field.get_boundary()
+	var boundary := get_effective_boundary()
 	var boundary_end := boundary.position + boundary.size
 	var boundary_center := boundary.position + boundary.size * 0.5
 	var half_view_size := get_view_size(camera_zoom) * 0.5

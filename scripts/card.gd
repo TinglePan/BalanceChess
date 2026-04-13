@@ -2,6 +2,11 @@ extends Node2D
 class_name Card
 
 
+signal mouse_entered
+signal mouse_exited
+signal drag_started
+
+
 const COLLISION_MASK := 1
 const NORMAL_Z_INDEX := 1
 const HIGHLIGHT_Z_INDEX := NORMAL_Z_INDEX + 100
@@ -24,23 +29,28 @@ func _ready() -> void:
 	
 
 func _on_area_2d_mouse_entered():
-	GameManager.card_manager.hover_over(self)
+	mouse_entered.emit()
 
 
 func _on_area_2d_mouse_exited():
-	GameManager.card_manager.hover_off(self)
+	mouse_exited.emit()
 	
 	
 func load_data(card_data: CardData):
 	data = card_data
 	$Sprite.texture = load(data.sprite_path)
 	$Name.text = data.name
-	$Rank.text = str(data.rank)
+	if card_data.type in CardData.CARD_TYPES_WITH_RANK:
+		$Rank.visible = true		
+		$Rank.text = str(data.rank)
+	else:
+		$Rank.visible = false
 
 
-func animate_move(to_position: Vector2, duration: float = 0.2) -> void:
+func animate_move(to_position: Vector2, duration: float = 0.2) -> Tween:
 	var tween := create_tween()
 	tween.tween_property(self, "global_position", to_position, duration)
+	return tween
 	
 	
 func toggle_highlight(highlight: bool) -> void:
@@ -60,6 +70,6 @@ func on_start_drag():
 
 func _on_mouse_button_event(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
 	if event.pressed and can_drag:
-		GameManager.card_manager.start_drag(self)
+		drag_started.emit()
 		return true
 	return false

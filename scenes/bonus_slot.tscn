@@ -1,11 +1,13 @@
 [gd_scene format=3 uid="uid://b1igf43xdvbjk"]
 
 [ext_resource type="Texture2D" uid="uid://dtl3xj8uddc6b" path="res://assets/sprites/card_slot.png" id="1_fy00k"]
+[ext_resource type="Script" uid="uid://dhd1gl0dovoot" path="res://scripts/card_slot.gd" id="1_ywcu3"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7a6oe"]
 size = Vector2(52, 80)
 
 [node name="BonusSlot" type="Node2D" unique_id=1255802802]
+script = ExtResource("1_ywcu3")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=816959123]
 texture_filter = 1

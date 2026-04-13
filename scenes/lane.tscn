@@ -3,8 +3,9 @@
 [ext_resource type="Script" uid="uid://c35j1x0yufdqr" path="res://scripts/lane.gd" id="1_6c0se"]
 [ext_resource type="PackedScene" uid="uid://c6su6j40b72ew" path="res://scenes/card_slot.tscn" id="2_8qan7"]
 
-[node name="PlayerLane" type="Node2D" unique_id=826776391]
+[node name="PlayerLane" type="Node2D" unique_id=826776391 node_paths=PackedStringArray("card_slots")]
 script = ExtResource("1_6c0se")
+card_slots = [NodePath("CardSlot"), NodePath("CardSlot2"), NodePath("CardSlot3"), NodePath("CardSlot4"), NodePath("CardSlot5"), NodePath("CardSlot6")]
 
 [node name="CardSlot" parent="." unique_id=1890089415 instance=ExtResource("2_8qan7")]
 position = Vector2(0, -44)

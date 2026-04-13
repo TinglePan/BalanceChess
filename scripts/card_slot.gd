@@ -26,3 +26,11 @@ func add_pawn(data: CardData) -> void:
 	new_pawn.global_position = $DropAnchor.global_position
 	pawn = new_pawn
 	pawn.load_card_data(data)
+	
+	
+func send_pawn_to_deck(deck: Deck, index: int = 0, animation_duration: float = ANIMATION_DURATION) -> void:
+	if not pawn:
+		push_error("CardSlot has no pawn to send to deck")
+		return
+	pawn.send_to_deck(deck, index, animation_duration)
+	pawn = null

@@ -8,8 +8,8 @@ class_name Field
 
 var row_count: int = 0
 var column_count: int = 0
-var rooms: Array[Node2D] = []
-var bonus_slots: Array[Node2D] = []
+var rooms: Array[Room] = []
+var bonus_slots: Array[CardSlot] = []
 var engaging_rooms: Array[Room] = []
 @export var horizontal_spacing_px: float = 16
 @export var vertical_spacing_px: float = 24
@@ -51,6 +51,25 @@ func set_grid_dimensions(_row_count: int, _column_count: int) -> void:
 	_sync_bonus_slot_count()
 	_adjust_room_positions()
 	
+	
+func resolve_battle() -> void:
+	for room_node in engaging_rooms:
+		var room := room_node as Room
+		room.resolve_battle()
+		
+		
+func room_index(room: Room) -> Vector2i:
+	if room == null or column_count <= 0:
+		return Vector2i(-1, -1)
+
+	var index := rooms.find(room)
+	if index < 0:
+		return Vector2i(-1, -1)
+
+	var column := index % column_count
+	var row := floori(float(index) / float(column_count))
+	return Vector2i(column, row)
+
 
 # Adjust rooms plus bonus headers. Row bonus cells are placed to the left of each row,
 # and column bonus cells are placed above each column, both aligned to room centers.
@@ -101,12 +120,21 @@ func _sync_room_count() -> void:
 	var target_size := row_count * column_count
 	if rooms.size() < target_size:
 		for i in range(rooms.size(), target_size):
-			var new_room := room_scene.instantiate() as Node2D
+			var new_room := room_scene.instantiate() as Room
+			if new_room == null:
+				push_error("Room scene did not instantiate a Room.")
+				continue
+
+			var room_clicked_handler := _on_room_clicked.bind(new_room)
+			if not new_room.clicked.is_connected(room_clicked_handler):
+				new_room.clicked.connect(room_clicked_handler)
 			add_child(new_room)
 			rooms.append(new_room)
 	elif rooms.size() > target_size:
 		for i in range(rooms.size() - 1, target_size - 1, -1):
-			var room := rooms[i]
+			var room := rooms[i] as Room
+			if room != null:
+				engaging_rooms.erase(room)
 			if room.get_parent() == self:
 				remove_child(room)
 			room.queue_free()
@@ -164,4 +192,24 @@ func _get_collision_shape_size(node: Node2D) -> Vector2:
 		return Vector2.ZERO
 
 	return rect_shape.size * collision_shape.global_scale.abs()
+	
+	
+func _on_room_clicked(room: Room) -> void:
+	if room == null:
+		return
 
+	var index := engaging_rooms.find(room)
+	if index >= 0:
+		engaging_rooms.remove_at(index)
+		room.set_engaging_index(0)
+		for i in range(index, engaging_rooms.size()):
+			var r := engaging_rooms[i] as Room
+			r.set_engaging_index(i + 1)
+	else:
+		engaging_rooms.append(room)
+		room.set_engaging_index(engaging_rooms.size())
+
+
+# On Start Button Pressed, for testing purposes only. This will resolve the battle in all engaging rooms and print the result to the console.
+func _on_button_pressed():
+	resolve_battle()

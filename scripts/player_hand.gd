@@ -18,12 +18,6 @@ func _ready() -> void:
 	var scaled_rect_size := rect_shape.size * collision_shape.global_scale.abs() as Vector2
 	var top_left := collision_shape.global_position - (scaled_rect_size * 0.5) as Vector2
 	rect = Rect2(top_left, scaled_rect_size)
-	GameManager.player_hand_ref = self
-
-
-func _exit_tree() -> void:
-	if GameManager.player_hand_ref == self:
-		GameManager.player_hand_ref = null
 
 
 func add_card(card: Card, index: int = 0, animation_duration: float = ANIMATION_DURATION):
@@ -38,7 +32,28 @@ func remove_card(card: Card):
 	card.current_holder = null
 	card.z_index = Card.NORMAL_Z_INDEX
 	update_card_positions()
-		
+	
+	
+func send_card_to(deck: Deck, index: int = 0, animation_duration: float = ANIMATION_DURATION) -> void:
+	if deck == null:
+		push_error("Target deck is null")
+		return
+	if index < 0 or index >= cards.size():
+		push_error("Invalid card index: ", index)
+		return
+
+	var card := cards[index]
+	cards.remove_at(index)
+	card.current_holder = null
+	card.can_drag = false
+	card.z_index = Card.DRAG_Z_INDEX
+	update_card_positions(animation_duration)
+
+	var tween := card.animate_move(deck.global_position, animation_duration)
+	deck.add_card_data(card.data, -1)
+	await tween.finished
+	card.queue_free()
+	
 		
 func update_card_positions(animation_duration: float = ANIMATION_DURATION):
 	for i in cards.size():
@@ -51,6 +66,9 @@ func calculate_card_position(index: int) -> Vector2:
 	var card_count := cards.size()
 	var x := hand_rect_center.x
 	var y := hand_rect_center.y
+	
+	if card_count == 0:
+		return Vector2(x, y)
 		
 	var card_width := cards[0].area_size.x
 	var left_x := rect.position.x + (card_width * 0.5)

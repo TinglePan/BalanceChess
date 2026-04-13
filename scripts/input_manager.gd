@@ -25,7 +25,7 @@ var event_handlers := {
 }
 
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		_dispatch_mouse_button_event(event)
 	elif event is InputEventMouseMotion:
@@ -80,37 +80,40 @@ func deregister_mouse_motion_event_handler(button_index: int, handler: Callable 
 		push_error("Invalid mouse motion button index: %d" % button_index)
 
 
-func raycast_topmost(pos: Vector2, mask: int = DEFAULT_COLLISION_LAYER, canvas_instance_id: int = 0) -> Node2D:
-	var result := raycast_colliders_sorted(pos, mask, canvas_instance_id)
+func raycast_topmost(pos: Vector2, canvas_instance_id_list: Array[int], mask: int = DEFAULT_COLLISION_LAYER) -> Node2D:
+	var result := raycast_colliders_sorted(pos, canvas_instance_id_list, mask)
 	var size := result.size()
 	if size > 0:
 		return result[0]
 	return null
 
 
-func raycast_colliders_sorted(pos: Vector2, mask: int = DEFAULT_COLLISION_LAYER, canvas_instance_id: int = 0) -> Array[CollisionObject2D]:
+func raycast_colliders_sorted(pos: Vector2, canvas_instance_id_list: Array[int], mask: int = DEFAULT_COLLISION_LAYER) -> Array[CollisionObject2D]:
 	var space_state := get_world_2d().direct_space_state
 	var params := PhysicsPointQueryParameters2D.new()
-	params.position = pos
 	params.collide_with_areas = true
 	params.collide_with_bodies = true
 	params.collision_mask = mask
-	params.canvas_instance_id = canvas_instance_id
-	var hits := space_state.intersect_point(params)
-	var collider_map := {}
-	for hit in hits:
-		var collider: CollisionObject2D = hit.collider
-		if collider != null:
-			collider_map[collider.get_instance_id()] = collider
-
 	var colliders: Array[CollisionObject2D] = []
-	for collider in collider_map.values():
-		colliders.append(collider)
+	for canvas_instance_id in canvas_instance_id_list:
+		params.position = _viewport_to_canvas_position(pos, canvas_instance_id)
+		params.canvas_instance_id = canvas_instance_id
+		var hits := space_state.intersect_point(params)
+		for hit in hits:
+			var collider: CollisionObject2D = hit.collider
+			if collider != null:
+				colliders.append(collider)
 
 	colliders.sort_custom(func (a: CollisionObject2D, b: CollisionObject2D):
 		return _is_above(a, b)
 	)
 	return colliders
+
+
+func _viewport_to_canvas_position(viewport_pos: Vector2, canvas_instance_id: int) -> Vector2:
+	if canvas_instance_id == 0:
+		return get_viewport().get_canvas_transform().affine_inverse() * viewport_pos
+	return viewport_pos
 
 
 func _is_above(a: CanvasItem, b: CanvasItem) -> bool:
@@ -170,7 +173,7 @@ func _dispatch_mouse_button_event(event: InputEventMouseButton) -> void:
 		if handlers_for_button.is_empty():
 			return
 			
-		var colliders := raycast_colliders_sorted(event.position, DEFAULT_COLLISION_LAYER, ui_canvas_instance_id)
+		var colliders := raycast_colliders_sorted(event.position, [0, ui_canvas_instance_id], DEFAULT_COLLISION_LAYER)
 		for collider in colliders:
 			var collider_id := collider.get_instance_id()
 			if not handlers_for_button.has(collider_id):

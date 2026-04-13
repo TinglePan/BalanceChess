@@ -15,7 +15,6 @@ var hand_card_size: Vector2
 
 
 func _ready() -> void:
-	GameManager.card_manager = self
 	screen_size = get_viewport().size
 	InputManager.register_mouse_button_event_handler(Card.DRAG_BUTTON, null, on_mouse_button_event)
 
@@ -37,6 +36,9 @@ func on_mouse_button_event(collider: CollisionObject2D, event: InputEventMouseBu
 
 func create_card_at(card_data: CardData, pos: Vector2) -> Card:
 	var card := card_scene.instantiate() as Card
+	card.mouse_entered.connect(hover_over.bind(card))
+	card.mouse_exited.connect(hover_off.bind(card))
+	card.drag_started.connect(start_drag.bind(card))
 	card.load_data(card_data)
 	card.global_position = pos
 	add_child(card)
@@ -45,7 +47,7 @@ func create_card_at(card_data: CardData, pos: Vector2) -> Card:
 	
 func raycast4card_at_mouse(canvas_instance_id: int = 0) -> Card:
 	var mouse_pos := get_viewport().get_mouse_position()
-	var collider := InputManager.raycast_topmost(mouse_pos, InputManager.DEFAULT_COLLISION_LAYER, canvas_instance_id)
+	var collider := InputManager.raycast_topmost(mouse_pos, [canvas_instance_id])
 	var card := collider.get_parent() as Card if collider else null
 	return card
 	
@@ -77,7 +79,7 @@ func start_drag(card: Card):
 func stop_drag():
 	if card_dragging:
 		var mouse_pos := get_viewport().get_mouse_position()
-		var collider := InputManager.raycast_topmost(mouse_pos)
+		var collider := InputManager.raycast_topmost(mouse_pos, [0])
 		var topmost_card_slot := collider.get_parent() as CardSlot if collider else null
 		if topmost_card_slot:
 			if card_dragging.current_holder is PlayerHand:
@@ -91,4 +93,3 @@ func stop_drag():
 			card_dragging.scale = Vector2(1, 1) # Reset scale
 			card_dragging.z_index = Card.NORMAL_Z_INDEX
 		card_dragging = null
-
