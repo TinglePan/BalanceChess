@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bthlyngb6f0g0"]
 
 [ext_resource type="Texture2D" uid="uid://dndp6vxpas3ik" path="res://assets/sprites/up_arrow.png" id="1_feeek"]
+[ext_resource type="Script" uid="uid://8lpaaji6grve" path="res://scripts/direction_pad.gd" id="1_k7xas"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_feeek"]
 size = Vector2(57, 48)
@@ -9,6 +10,7 @@ size = Vector2(57, 48)
 size = Vector2(48, 57)
 
 [node name="DirectionPad" type="Node2D" unique_id=597766373]
+script = ExtResource("1_k7xas")
 
 [node name="Left" type="Node2D" parent="." unique_id=1141961516]
 position = Vector2(-80, 0)

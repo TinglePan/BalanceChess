@@ -192,22 +192,63 @@ func _get_collision_shape_size(node: Node2D) -> Vector2:
 		return Vector2.ZERO
 
 	return rect_shape.size * collision_shape.global_scale.abs()
+
+
+func set_engaging_rooms_from(room: Room) -> void:
+	var ordered_rooms: Array[Room] = []
+	if room == null or row_count <= 0 or column_count <= 0:
+		return 
+
+	var start_index := room_index(room)
+	if start_index.x < 0 or start_index.y < 0:
+		return
+
+	match GameManager.board.input_state:
+		Board.InputState.ALTERNATE_LEFT:
+			for column in range(column_count - 1, -1, -1):
+				_add_room_at(column, start_index.y, ordered_rooms)
+		Board.InputState.ALTERNATE_RIGHT:
+			for column in range(column_count):
+				_add_room_at(column, start_index.y, ordered_rooms)
+		Board.InputState.ALTERNATE_UP:
+			for row in range(row_count - 1, -1, -1):
+				_add_room_at(start_index.x, row, ordered_rooms)
+		Board.InputState.ALTERNATE_DOWN:
+			for row in range(row_count):
+				_add_room_at(start_index.x, row, ordered_rooms)
+		Board.InputState.NEUTRAL:
+			push_error("get_ordered_rooms_from called with NEUTRAL input state, which is not valid for ordering rooms.")
+	for r in engaging_rooms:
+		if r != null:
+			r.set_engaging_index(0)
+
+	engaging_rooms.clear()
+	for r in ordered_rooms:
+		if r == null or engaging_rooms.has(r):
+			continue
+		engaging_rooms.append(r)
+		r.set_engaging_index(engaging_rooms.size())
+
+
+func _add_room_at(column: int, row: int, target: Array[Room]) -> void:
+	var linear_index := row * column_count + column
+	if linear_index < 0 or linear_index >= rooms.size():
+		return
+
+	var room := rooms[linear_index] as Room
+	if room != null:
+		target.append(room)
 	
 	
 func _on_room_clicked(room: Room) -> void:
 	if room == null:
 		return
 
-	var index := engaging_rooms.find(room)
-	if index >= 0:
-		engaging_rooms.remove_at(index)
-		room.set_engaging_index(0)
-		for i in range(index, engaging_rooms.size()):
-			var r := engaging_rooms[i] as Room
-			r.set_engaging_index(i + 1)
-	else:
-		engaging_rooms.append(room)
-		room.set_engaging_index(engaging_rooms.size())
+	var board := GameManager.board
+	
+	if board != null and board.field == self and board.is_in_alternate_input_state():
+		set_engaging_rooms_from(room)
+		return
 
 
 # On Start Button Pressed, for testing purposes only. This will resolve the battle in all engaging rooms and print the result to the console.

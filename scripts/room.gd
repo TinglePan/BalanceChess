@@ -52,11 +52,11 @@ func resolve_battle():
 		print("The battle is a draw in ", GameManager.board.field.room_index(self))
 		
 
-func _on_room_mouse_button_event(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
-	# Intentionally empty for now.
-	if event.is_pressed():
-		clicked.emit()
-		return true
-	return false
-	
-	
+func _on_room_mouse_button_event(_collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
+	if not event.is_pressed():
+		return false
+
+	clicked.emit()
+	return true
+
+

@@ -2,6 +2,15 @@
 class_name Board
 
 
+enum InputState {
+	NEUTRAL,
+	ALTERNATE_UP,
+	ALTERNATE_DOWN,
+	ALTERNATE_LEFT,
+	ALTERNATE_RIGHT
+}
+
+
 @export var player_hand: PlayerHand
 @export var field: Field
 @export var main_camera: Camera2D
@@ -12,6 +21,7 @@ class_name Board
 @export var encounter_deck: Deck
 
 var level: int = 0
+var input_state: InputState = InputState.NEUTRAL
 
 
 
@@ -24,6 +34,23 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if GameManager.board == self:
 		GameManager.board = null
+	Input.set_custom_mouse_cursor(null)
+
+
+func set_input_state(next_state: InputState, cursor_texture: Texture2D = null) -> void:
+	input_state = next_state
+	if input_state == InputState.NEUTRAL:
+		Input.set_custom_mouse_cursor(null)
+		return
+
+	if cursor_texture == null:
+		push_warning("Alternate input state set without a cursor texture.")
+		return
+	Input.set_custom_mouse_cursor(cursor_texture)
+
+
+func is_in_alternate_input_state() -> bool:
+	return input_state != InputState.NEUTRAL
 
 
 func game_start() -> void:
@@ -68,6 +95,11 @@ func turn_start() -> void:
 	deal_enmey_cards()
 	deal_bonus_cards()
 	deal_player_hand_cards()
+	
+
+func turn_end() -> void:
+	# TODO
+	pass
 	
 	
 func deal_enmey_cards():
