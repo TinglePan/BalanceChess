@@ -22,6 +22,7 @@ enum InputState {
 
 var level: int = 0
 var input_state: InputState = InputState.NEUTRAL
+var turn: int = 0
 
 
 
@@ -70,6 +71,10 @@ func game_start() -> void:
 func level_start() -> void:
 	level += 1
 	field.set_grid_dimensions(level + 2, 3)
+	BoardEvents.publish(BoardEvents.LEVEL_STARTED, {
+		"board": self,
+		"level": level,
+	})
 	reset()
 	turn_start()
 	
@@ -78,28 +83,42 @@ func reset() -> void:
 	for room in field.rooms:
 		for slot in room.player_lane.card_slots:
 			if slot.pawn != null:
-				slot.pawn.send_to_deck(main_deck)
+				slot.send_pawn_to_deck(main_deck)
 		for slot in room.enemy_lane.card_slots:
 			if slot.pawn != null:
-				slot.pawn.send_to_deck(main_deck)
+				slot.send_pawn_to_deck(main_deck)
 	for slot in field.bonus_slots:
 		if slot.pawn != null:
-			slot.pawn.send_to_deck(encounter_deck)
+			slot.send_pawn_to_deck(encounter_deck)
 	for card in player_hand.cards:
 		card.send_to_deck(main_deck)
 	discard_pile.shuffle_to(main_deck)
 	graveyard.shuffle_to(main_deck)
+	BoardEvents.publish(BoardEvents.RESET, {
+		"board": self,
+		"level": level,
+		"turn": turn,
+	})
 
 
 func turn_start() -> void:
+	turn += 1
+	BoardEvents.publish(BoardEvents.TURN_STARTED, {
+		"board": self,
+		"turn": turn,
+		"level": level,
+	})
 	deal_enmey_cards()
 	deal_bonus_cards()
 	deal_player_hand_cards()
 	
 
 func turn_end() -> void:
-	# TODO
-	pass
+	BoardEvents.publish(BoardEvents.TURN_ENDED, {
+		"board": self,
+		"turn": turn,
+		"level": level,
+	})
 	
 	
 func deal_enmey_cards():
@@ -112,7 +131,7 @@ func deal_enmey_cards():
 func deal_bonus_cards() -> void:
 	for slot in field.bonus_slots:
 		if slot.pawn != null:
-			slot.pawn.send_to_deck(discard_pile)
+			slot.send_pawn_to_deck(discard_pile)
 	for slot in field.bonus_slots:
 		if encounter_deck.card_data_list.is_empty():
 			return

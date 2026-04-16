@@ -29,3 +29,4 @@ func send_to_deck(deck: Deck, index: int = 0, duration: float = 0.2):
 func _on_sent_to_deck(deck: Deck, index: int):
 	deck.add_card_data(card_data, index)
 	queue_free()
+
