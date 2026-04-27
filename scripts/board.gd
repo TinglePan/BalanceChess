@@ -2,15 +2,6 @@
 class_name Board
 
 
-enum InputState {
-	NEUTRAL,
-	ALTERNATE_UP,
-	ALTERNATE_DOWN,
-	ALTERNATE_LEFT,
-	ALTERNATE_RIGHT
-}
-
-
 @export var player_hand: PlayerHand
 @export var field: Field
 @export var main_camera: Camera2D
@@ -21,9 +12,7 @@ enum InputState {
 @export var encounter_deck: Deck
 
 var level: int = 0
-var input_state: InputState = InputState.NEUTRAL
 var turn: int = 0
-
 
 
 # Called when the node enters the scene tree for the first time.
@@ -38,30 +27,16 @@ func _exit_tree() -> void:
 	Input.set_custom_mouse_cursor(null)
 
 
-func set_input_state(next_state: InputState, cursor_texture: Texture2D = null) -> void:
-	input_state = next_state
-	if input_state == InputState.NEUTRAL:
-		Input.set_custom_mouse_cursor(null)
-		return
-
-	if cursor_texture == null:
-		push_warning("Alternate input state set without a cursor texture.")
-		return
-	Input.set_custom_mouse_cursor(cursor_texture)
-
-
-func is_in_alternate_input_state() -> bool:
-	return input_state != InputState.NEUTRAL
-
-
+	
+	
 func game_start() -> void:
 	GameManager.player_data = PlayerData.new(3, 3, 3, 5)
-	for i in range(5):
-		main_deck.add_card_data(CardDb.MONSTER_CARDS["defect"])
-	for i in range(5):
-		main_deck.add_card_data(CardDb.MONSTER_CARDS["mob_slime"])
 	for i in range(10):
-		encounter_deck.add_card_data(CardDb.ITEM_CARDS["gold_nugget"])
+		main_deck.add_card_data(CardDb.MONSTER_CARDS[CardDb.CardId.DEFECT])
+	for i in range(10):
+		main_deck.add_card_data(CardDb.MONSTER_CARDS[CardDb.CardId.MOB_SLIME])
+	for i in range(10):
+		encounter_deck.add_card_data(CardDb.ITEM_CARDS[CardDb.CardId.GOLD_NUGGET])
 	if main_camera != null:
 		# Defer to ensure field nodes are fully laid out before fitting camera.
 		main_camera.call_deferred("apply_initial_fit_zoom")
@@ -75,11 +50,12 @@ func level_start() -> void:
 		"board": self,
 		"level": level,
 	})
-	reset()
+	level_reset()
+	round_start()
 	turn_start()
 	
 	
-func reset() -> void:
+func level_reset() -> void:
 	for room in field.rooms:
 		for slot in room.player_lane.card_slots:
 			if slot.pawn != null:
@@ -94,11 +70,22 @@ func reset() -> void:
 		card.send_to_deck(main_deck)
 	discard_pile.shuffle_to(main_deck)
 	graveyard.shuffle_to(main_deck)
-	BoardEvents.publish(BoardEvents.RESET, {
+	BoardEvents.publish(BoardEvents.LEVEL_RESET, {
 		"board": self,
 		"level": level,
 		"turn": turn,
 	})
+	
+
+func round_start() -> void:
+	BoardEvents.publish(BoardEvents.ROUND_STARTED, {
+		"board": self,
+		"level": level,
+		"turn": turn,
+	})
+	deal_enmey_cards()
+	deal_bonus_cards()
+	deal_player_hand_cards()
 
 
 func turn_start() -> void:
@@ -108,9 +95,6 @@ func turn_start() -> void:
 		"turn": turn,
 		"level": level,
 	})
-	deal_enmey_cards()
-	deal_bonus_cards()
-	deal_player_hand_cards()
 	
 
 func turn_end() -> void:
@@ -128,13 +112,16 @@ func deal_enmey_cards():
 			main_deck.deal_card(target_slot)
 			
 			
-func deal_bonus_cards() -> void:
-	for slot in field.bonus_slots:
-		if slot.pawn != null:
-			slot.send_pawn_to_deck(discard_pile)
+func deal_bonus_cards(shuffle_back: bool = false) -> void:
+	if shuffle_back:
+		for slot in field.bonus_slots:
+			if slot.pawn != null:
+				slot.send_pawn_to_deck(discard_pile)
 	for slot in field.bonus_slots:
 		if encounter_deck.card_data_list.is_empty():
 			return
+		if slot.pawn != null:
+			continue
 		encounter_deck.deal_card(slot)
 		
 			

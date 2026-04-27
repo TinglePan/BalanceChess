@@ -18,30 +18,30 @@ var initial_zoom_scalar: float = 1.0
 func _ready() -> void:
 	field = get_parent().get_node("Field") as Field
 	apply_initial_fit_zoom()
-	InputManager.register_mouse_button_event_handler(DRAG_BUTTON, null, on_drag_button_event)
+	InputManager.register_fallback_mouse_button_event_handler(DRAG_BUTTON, on_drag_button_event)
 	InputManager.register_mouse_motion_event_handler(DRAG_BUTTON, on_mouse_motion)
-	InputManager.register_mouse_button_event_handler(MouseButton.MOUSE_BUTTON_WHEEL_DOWN, null, on_mouse_wheel_down)
-	InputManager.register_mouse_button_event_handler(MouseButton.MOUSE_BUTTON_WHEEL_UP, null, on_mouse_wheel_up)
+	InputManager.register_fallback_mouse_button_event_handler(MouseButton.MOUSE_BUTTON_WHEEL_DOWN, on_mouse_wheel_down)
+	InputManager.register_fallback_mouse_button_event_handler(MouseButton.MOUSE_BUTTON_WHEEL_UP, on_mouse_wheel_up)
 
 
 func _exit_tree() -> void:
-	InputManager.deregister_mouse_button_event_handler(DRAG_BUTTON, null, on_drag_button_event)
+	InputManager.deregister_fallback_mouse_button_event_handler(DRAG_BUTTON, on_drag_button_event)
 	InputManager.deregister_mouse_motion_event_handler(DRAG_BUTTON, on_mouse_motion)
-	InputManager.deregister_mouse_button_event_handler(MouseButton.MOUSE_BUTTON_WHEEL_DOWN, null, on_mouse_wheel_down)
-	InputManager.deregister_mouse_button_event_handler(MouseButton.MOUSE_BUTTON_WHEEL_UP, null, on_mouse_wheel_up)
+	InputManager.deregister_fallback_mouse_button_event_handler(MouseButton.MOUSE_BUTTON_WHEEL_DOWN, on_mouse_wheel_down)
+	InputManager.deregister_fallback_mouse_button_event_handler(MouseButton.MOUSE_BUTTON_WHEEL_UP, on_mouse_wheel_up)
 	
 
-func on_mouse_wheel_up(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
+func on_mouse_wheel_up(_collider: CollisionObject2D, _event: InputEventMouseButton) -> bool:
 	apply_zoom(zoom_speed)
 	return false
 	
 	
-func on_mouse_wheel_down(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
+func on_mouse_wheel_down(_collider: CollisionObject2D, _event: InputEventMouseButton) -> bool:
 	apply_zoom(-zoom_speed)
 	return false
 	
 	
-func on_drag_button_event(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
+func on_drag_button_event(_collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
 	dragging = event.pressed
 	return false
 

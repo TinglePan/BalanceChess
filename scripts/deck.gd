@@ -9,12 +9,14 @@ var card_data_list := []
 
 
 func _ready() -> void:
-	InputManager.register_mouse_button_event_handler(DEAL_CARD_BUTTON, $Area2D, _on_deal_card_button_event)
+	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	input_state.register_mouse_button_event_handler(DEAL_CARD_BUTTON, $Area2D, _on_deal_card_button_event)
 	update_count_label()
 	
 	
 func _exit_tree() -> void:
-	InputManager.deregister_mouse_button_event_handler(DEAL_CARD_BUTTON, $Area2D, _on_deal_card_button_event)
+	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	input_state.deregister_mouse_button_event_handler(DEAL_CARD_BUTTON, $Area2D, _on_deal_card_button_event)
 
 
 func add_card_data(card_data: CardData, index: int = 0):
@@ -64,7 +66,7 @@ func update_count_label():
 	$Label.text = str(card_data_list.size())
 	
 	
-func _on_deal_card_button_event(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
+func _on_deal_card_button_event(_collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
 	if event.is_pressed() and card_data_list.size() > 0:
 		deal_card(GameManager.board.player_hand)
 		return true

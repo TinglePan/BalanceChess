@@ -56,6 +56,17 @@ func resolve_battle() -> void:
 	for room_node in engaging_rooms:
 		var room := room_node as Room
 		room.resolve_battle()
+	clear_engaging_rooms()
+	if is_all_clear():
+		GameManager.board.round_start()
+	
+	
+func is_all_clear() -> bool:
+	for room_node in rooms:
+		var room := room_node as Room
+		if not room.enemy_lane.is_empty():
+			return false
+	return true
 		
 		
 func room_index(room: Room) -> Vector2i:
@@ -69,6 +80,47 @@ func room_index(room: Room) -> Vector2i:
 	var column := index % column_count
 	var row := floori(float(index) / float(column_count))
 	return Vector2i(column, row)
+
+
+func set_engaging_rooms_from(room: Room) -> void:
+	var ordered_rooms: Array[Room] = []
+	if room == null or row_count <= 0 or column_count <= 0:
+		return 
+
+	var start_index := room_index(room)
+	if start_index.x < 0 or start_index.y < 0:
+		return
+
+	match GameManager.board.current_input_state.id:
+		InputState.InputStateId.BOARD_PICK_ENGAGE_ROOMS_LEFT:
+			for column in range(column_count - 1, -1, -1):
+				_add_room_at(column, start_index.y, ordered_rooms)
+		InputState.InputStateId.BOARD_PICK_ENGAGE_ROOMS_RIGHT:
+			for column in range(column_count):
+				_add_room_at(column, start_index.y, ordered_rooms)
+		InputState.InputStateId.BOARD_PICK_ENGAGE_ROOMS_UP:
+			for row in range(row_count - 1, -1, -1):
+				_add_room_at(start_index.x, row, ordered_rooms)
+		InputState.InputStateId.BOARD_PICK_ENGAGE_ROOMS_DOWN:
+			for row in range(row_count):
+				_add_room_at(start_index.x, row, ordered_rooms)
+		_:
+			push_error("get_ordered_rooms_from called with non pick engage rooms input state, which is not valid for ordering rooms.")
+	
+	clear_engaging_rooms()
+	
+	for r in ordered_rooms:
+		if r == null or engaging_rooms.has(r):
+			continue
+		engaging_rooms.append(r)
+		r.set_engaging_index(engaging_rooms.size())
+		
+		
+func clear_engaging_rooms() -> void:
+	for r in engaging_rooms:
+		if r != null:
+			r.set_engaging_index(0)
+	engaging_rooms.clear()
 
 
 # Adjust rooms plus bonus headers. Row bonus cells are placed to the left of each row,
@@ -194,42 +246,6 @@ func _get_collision_shape_size(node: Node2D) -> Vector2:
 	return rect_shape.size * collision_shape.global_scale.abs()
 
 
-func set_engaging_rooms_from(room: Room) -> void:
-	var ordered_rooms: Array[Room] = []
-	if room == null or row_count <= 0 or column_count <= 0:
-		return 
-
-	var start_index := room_index(room)
-	if start_index.x < 0 or start_index.y < 0:
-		return
-
-	match GameManager.board.input_state:
-		Board.InputState.ALTERNATE_LEFT:
-			for column in range(column_count - 1, -1, -1):
-				_add_room_at(column, start_index.y, ordered_rooms)
-		Board.InputState.ALTERNATE_RIGHT:
-			for column in range(column_count):
-				_add_room_at(column, start_index.y, ordered_rooms)
-		Board.InputState.ALTERNATE_UP:
-			for row in range(row_count - 1, -1, -1):
-				_add_room_at(start_index.x, row, ordered_rooms)
-		Board.InputState.ALTERNATE_DOWN:
-			for row in range(row_count):
-				_add_room_at(start_index.x, row, ordered_rooms)
-		Board.InputState.NEUTRAL:
-			push_error("get_ordered_rooms_from called with NEUTRAL input state, which is not valid for ordering rooms.")
-	for r in engaging_rooms:
-		if r != null:
-			r.set_engaging_index(0)
-
-	engaging_rooms.clear()
-	for r in ordered_rooms:
-		if r == null or engaging_rooms.has(r):
-			continue
-		engaging_rooms.append(r)
-		r.set_engaging_index(engaging_rooms.size())
-
-
 func _add_room_at(column: int, row: int, target: Array[Room]) -> void:
 	var linear_index := row * column_count + column
 	if linear_index < 0 or linear_index >= rooms.size():
@@ -242,12 +258,6 @@ func _add_room_at(column: int, row: int, target: Array[Room]) -> void:
 	
 func _on_room_clicked(room: Room) -> void:
 	if room == null:
-		return
-
-	var board := GameManager.board
-	
-	if board != null and board.field == self and board.is_in_alternate_input_state():
-		set_engaging_rooms_from(room)
 		return
 
 

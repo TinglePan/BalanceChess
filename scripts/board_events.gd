@@ -8,7 +8,8 @@ const CARD_MOVED_BETWEEN_SLOTS := &"board_card_moved_between_slots"
 const LEVEL_STARTED := &"board_level_started"
 const TURN_STARTED := &"board_turn_started"
 const TURN_ENDED := &"board_turn_ended"
-const RESET := &"board_reset"
+const LEVEL_RESET := &"board_level_reset"
+const ROUND_STARTED := &"board_round_started"
 
 
 static var _listeners: Dictionary = {}
@@ -36,10 +37,13 @@ static func unsubscribe(event_name: StringName, callback: Callable) -> void:
 
 
 static func publish(event_name: StringName, payload: Dictionary = {}) -> void:
-	if event_name.is_empty() or not _listeners.has(event_name):
+	if event_name.is_empty():
+		return
+	if not _listeners.has(event_name):
 		return
 	var callbacks := (_listeners[event_name] as Array[Callable]).duplicate()
 	for callback in callbacks:
 		if callback.is_valid():
 			callback.call(payload)
+
 

@@ -2,6 +2,9 @@
 
 [ext_resource type="Texture2D" uid="uid://dndp6vxpas3ik" path="res://assets/sprites/up_arrow.png" id="1_feeek"]
 [ext_resource type="Script" uid="uid://8lpaaji6grve" path="res://scripts/direction_pad.gd" id="1_k7xas"]
+[ext_resource type="Texture2D" uid="uid://bq7rqj40lknsp" path="res://assets/sprites/left_arrow.png" id="2_jbluw"]
+[ext_resource type="Texture2D" uid="uid://dqltb2sx4l3nb" path="res://assets/sprites/right_arrow.png" id="4_nu0yj"]
+[ext_resource type="Texture2D" uid="uid://bimyae8re3vrd" path="res://assets/sprites/down_arrow.png" id="5_i20ob"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_feeek"]
 size = Vector2(57, 48)
@@ -17,8 +20,7 @@ position = Vector2(-80, 0)
 
 [node name="Sprite2D" type="Sprite2D" parent="Left" unique_id=542838665]
 texture_filter = 1
-rotation = -1.5707964
-texture = ExtResource("1_feeek")
+texture = ExtResource("2_jbluw")
 
 [node name="Area2D" type="Area2D" parent="Left" unique_id=1027195814]
 
@@ -44,8 +46,7 @@ position = Vector2(80, 0)
 
 [node name="Sprite2D" type="Sprite2D" parent="Right" unique_id=1707384300]
 texture_filter = 1
-rotation = 1.5707964
-texture = ExtResource("1_feeek")
+texture = ExtResource("4_nu0yj")
 
 [node name="Area2D" type="Area2D" parent="Right" unique_id=922200421]
 
@@ -58,8 +59,7 @@ position = Vector2(0, 80)
 
 [node name="Sprite2D" type="Sprite2D" parent="Down" unique_id=2054588773]
 texture_filter = 1
-rotation = 3.1415927
-texture = ExtResource("1_feeek")
+texture = ExtResource("5_i20ob")
 
 [node name="Area2D" type="Area2D" parent="Down" unique_id=1924906550]
 

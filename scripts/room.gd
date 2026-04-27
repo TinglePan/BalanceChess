@@ -47,8 +47,8 @@ func resolve_battle():
 		enemy_lane.send_all_pawns_to_deck(GameManager.board.discard_pile)
 		print("Enemy wins the battle in ", GameManager.board.field.room_index(self))
 	else:
-		player_lane.send_all_pawns_to_deck(GameManager.board.discard_pile)
-		enemy_lane.send_all_pawns_to_deck(GameManager.board.discard_pile)
+		player_lane.send_all_pawns_to_deck(GameManager.board.graveyard)
+		enemy_lane.send_all_pawns_to_deck(GameManager.board.graveyard)
 		print("The battle is a draw in ", GameManager.board.field.room_index(self))
 		
 

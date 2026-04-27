@@ -5,6 +5,7 @@ class_name CardManager
 var screen_size: Vector2
 var card_dragging: Card
 var card_hovering: Card
+var pawn_focusing: Pawn
 
 
 @export var card_scene := preload("res://scenes/card.tscn")
@@ -16,22 +17,14 @@ var hand_card_size: Vector2
 
 func _ready() -> void:
 	screen_size = get_viewport().size
-	InputManager.register_mouse_button_event_handler(Card.DRAG_BUTTON, null, on_mouse_button_event)
+	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	input_state.register_fallback_mouse_button_event_handler(Card.DRAG_BUTTON, _on_mouse_button_event)
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if card_dragging:
 		var mouse_pos := get_viewport().get_mouse_position()
 		card_dragging.position = Vector2(clamp(mouse_pos.x, 0, screen_size.x), clamp(mouse_pos.y, 0, screen_size.y))
-	
-
-func on_mouse_button_event(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
-	if event.button_index == Card.DRAG_BUTTON:
-		if not event.pressed:
-			if card_dragging:
-				stop_drag()
-				return true
-	return false
 	
 
 func create_card_at(card_data: CardData, pos: Vector2) -> Card:
@@ -47,7 +40,7 @@ func create_card_at(card_data: CardData, pos: Vector2) -> Card:
 	
 func raycast4card_at_mouse(canvas_instance_id: int = 0) -> Card:
 	var mouse_pos := get_viewport().get_mouse_position()
-	var collider := InputManager.raycast_topmost(mouse_pos, [canvas_instance_id])
+	var collider := InputManager.raycast_topmost(mouse_pos, [canvas_instance_id], InputManager.DEFAULT_COLLISION_LAYER)
 	var card := collider.get_parent() as Card if collider else null
 	return card
 	
@@ -79,7 +72,7 @@ func start_drag(card: Card):
 func stop_drag():
 	if card_dragging:
 		var mouse_pos := get_viewport().get_mouse_position()
-		var collider := InputManager.raycast_topmost(mouse_pos, [0])
+		var collider := InputManager.raycast_topmost(mouse_pos, [0], InputManager.DEFAULT_COLLISION_LAYER)
 		var topmost_card_slot := collider.get_parent() as CardSlot if collider else null
 		if topmost_card_slot:
 			if card_dragging.current_holder is PlayerHand:
@@ -93,3 +86,19 @@ func stop_drag():
 			card_dragging.scale = Vector2(1, 1) # Reset scale
 			card_dragging.z_index = Card.NORMAL_Z_INDEX
 		card_dragging = null
+		
+		
+func focus_pawn(pawn: Pawn):
+	if pawn_focusing and pawn_focusing != pawn:
+		pawn_focusing.on_unfocused()
+	pawn.on_focused()
+	pawn_focusing = pawn
+
+
+func _on_mouse_button_event(_collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
+	if event.button_index == Card.DRAG_BUTTON:
+		if not event.pressed:
+			if card_dragging:
+				stop_drag()
+				return true
+	return false

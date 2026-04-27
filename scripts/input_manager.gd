@@ -1,86 +1,62 @@
 extends Node2D
 
-
 const DEFAULT_COLLISION_LAYER := 1
-const MOUSE_BUTTON_EVENT := &"InputEventMouseButton"
-const MOUSE_MOTION_EVENT := &"InputEventMouseMotion"
-const FALLBACK_HANDLERS_KEY := &"__fallback_handlers__"
-const MOTION_BUTTONS := [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_RIGHT]
 
 
 var ui_canvas_instance_id: int
-var event_handlers := {
-	MOUSE_BUTTON_EVENT: {
-		MOUSE_BUTTON_LEFT: {FALLBACK_HANDLERS_KEY: []},
-		MOUSE_BUTTON_MIDDLE: {FALLBACK_HANDLERS_KEY: []},
-		MOUSE_BUTTON_RIGHT: {FALLBACK_HANDLERS_KEY: []},
-		MOUSE_BUTTON_WHEEL_UP: {FALLBACK_HANDLERS_KEY: []},
-		MOUSE_BUTTON_WHEEL_DOWN: {FALLBACK_HANDLERS_KEY: []}
-	},
-	MOUSE_MOTION_EVENT: {
-		MOUSE_BUTTON_LEFT: [],
-		MOUSE_BUTTON_MIDDLE: [],
-		MOUSE_BUTTON_RIGHT: []
-	}
-}
+
+var input_states: Dictionary[InputState.InputStateId, InputState] = {}
+var input_state_stack: Array[InputState]
+
+
+func current_input_state() -> InputState:
+	return input_state_stack.back() if input_state_stack.size() > 0 else null
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
-		_dispatch_mouse_button_event(event)
+		current_input_state().dispatch_mouse_button_event(event)
 	elif event is InputEventMouseMotion:
-		_dispatch_mouse_motion_event(event)
+		current_input_state().dispatch_mouse_motion_event(event)
 		
-
-func register_mouse_button_event_handler(button_index: int, collider: CollisionObject2D = null, handler: Callable = Callable()) -> void:
-	if button_index in event_handlers[MOUSE_BUTTON_EVENT]:
-		if not handler.is_valid():
-			push_error("Cannot register invalid handler for mouse button index: %d" % button_index)
-			return
-
-		if collider == null:
-			event_handlers[MOUSE_BUTTON_EVENT][button_index][FALLBACK_HANDLERS_KEY].append(handler)
-		else:
-			event_handlers[MOUSE_BUTTON_EVENT][button_index][collider.get_instance_id()] = handler
-	else:
-		push_error("Invalid mouse button index: %d" % button_index)
 		
+func register_input_state(state: InputState) -> void:
+	if state.id in input_states:
+		push_warning("Input state with id %d is already registered" % state.id)
+	input_states[state.id] = state
 	
-func deregister_mouse_button_event_handler(button_index: int, collider: CollisionObject2D = null, handler: Callable = Callable()) -> void:
-	if button_index in event_handlers[MOUSE_BUTTON_EVENT]:
-		if collider == null:
-			if handler.is_valid():
-				event_handlers[MOUSE_BUTTON_EVENT][button_index][FALLBACK_HANDLERS_KEY].erase(handler)
-			else:
-				event_handlers[MOUSE_BUTTON_EVENT][button_index][FALLBACK_HANDLERS_KEY].clear()
-		else:
-			event_handlers[MOUSE_BUTTON_EVENT][button_index].erase(collider.get_instance_id())
-	else:
-		push_error("Invalid mouse button index: %d" % button_index)
+	
+func get_input_state(state_id: InputState.InputStateId) -> InputState:
+	if state_id in input_states:
+		return input_states[state_id]
+	push_error("Input state with id %d is not registered" % state_id)
+	return null
+		
+		
+func push_input_state(next_state: InputState) -> void:
+	var prev_state := current_input_state()
+	if prev_state.id == next_state.id:
+		return
+	if prev_state != null:
+		prev_state.on_exit()
+	input_state_stack.append(next_state)
+	if next_state != null:
+		next_state.on_enter()
+		
+		
+func pop_input_state() -> void:
+	if input_state_stack.size() == 0:
+		return
+	var prev_state := current_input_state()
+	input_state_stack.pop_back()
+	var next_state := current_input_state()
+	if prev_state != null:
+		prev_state.on_exit()
+	if next_state != null:
+		next_state.on_enter()
 
 
-func register_mouse_motion_event_handler(button_index: int, handler: Callable = Callable()) -> void:
-	if button_index in event_handlers[MOUSE_MOTION_EVENT]:
-		if not handler.is_valid():
-			push_error("Cannot register invalid handler for mouse motion button index: %d" % button_index)
-			return
-
-		event_handlers[MOUSE_MOTION_EVENT][button_index].append(handler)
-	else:
-		push_error("Invalid mouse motion button index: %d" % button_index)
-
-
-func deregister_mouse_motion_event_handler(button_index: int, handler: Callable = Callable()) -> void:
-	if button_index in event_handlers[MOUSE_MOTION_EVENT]:
-		if handler.is_valid():
-			event_handlers[MOUSE_MOTION_EVENT][button_index].erase(handler)
-		else:
-			event_handlers[MOUSE_MOTION_EVENT][button_index].clear()
-	else:
-		push_error("Invalid mouse motion button index: %d" % button_index)
-
-
-func raycast_topmost(pos: Vector2, canvas_instance_id_list: Array[int], mask: int = DEFAULT_COLLISION_LAYER) -> Node2D:
+func raycast_topmost(pos: Vector2, canvas_instance_id_list: Array[int], mask: int) -> Node2D:
 	var result := raycast_colliders_sorted(pos, canvas_instance_id_list, mask)
 	var size := result.size()
 	if size > 0:
@@ -88,7 +64,7 @@ func raycast_topmost(pos: Vector2, canvas_instance_id_list: Array[int], mask: in
 	return null
 
 
-func raycast_colliders_sorted(pos: Vector2, canvas_instance_id_list: Array[int], mask: int = DEFAULT_COLLISION_LAYER) -> Array[CollisionObject2D]:
+func raycast_colliders_sorted(pos: Vector2, canvas_instance_id_list: Array[int], mask: int) -> Array[CollisionObject2D]:
 	var space_state := get_world_2d().direct_space_state
 	var params := PhysicsPointQueryParameters2D.new()
 	params.collide_with_areas = true
@@ -165,74 +141,3 @@ func _is_tree_order_after(a: Node, b: Node) -> bool:
 		if a_chain[i] != b_chain[i]:
 			return a_chain[i] > b_chain[i]
 	return a_chain.size() > b_chain.size()
-		
-
-func _dispatch_mouse_button_event(event: InputEventMouseButton) -> void:
-	if event.button_index in event_handlers[MOUSE_BUTTON_EVENT]:
-		var handlers_for_button: Dictionary = event_handlers[MOUSE_BUTTON_EVENT][event.button_index]
-		if handlers_for_button.is_empty():
-			return
-			
-		var colliders := raycast_colliders_sorted(event.position, [0, ui_canvas_instance_id], DEFAULT_COLLISION_LAYER)
-		for collider in colliders:
-			var collider_id := collider.get_instance_id()
-			if not handlers_for_button.has(collider_id):
-				continue
-	
-			var handler: Callable = handlers_for_button[collider_id]
-			if not handler.is_valid():
-				handlers_for_button.erase(collider_id)
-				continue
-	
-			var result = handler.call(collider, event)
-			if typeof(result) == TYPE_BOOL and result:
-				return
-			if typeof(result) != TYPE_BOOL:
-				push_warning("Mouse handler for collider %s did not return bool; propagation continues by default." % str(collider))
-
-		# Fallback handlers run only if collider handlers did not stop propagation.
-		var fallback_handlers: Array = handlers_for_button.get(FALLBACK_HANDLERS_KEY, [])
-		var fallback_handlers_snapshot := fallback_handlers.duplicate()
-		for handler_entry in fallback_handlers_snapshot:
-			var fallback_handler: Callable = handler_entry
-			if not fallback_handler.is_valid():
-				fallback_handlers.erase(fallback_handler)
-				continue
-
-			var fallback_result = fallback_handler.call(null, event)
-			if typeof(fallback_result) == TYPE_BOOL and fallback_result:
-				return
-			if typeof(fallback_result) != TYPE_BOOL:
-				push_warning("Mouse fallback handler did not return bool; propagation continues by default.")
-
-
-func _dispatch_mouse_motion_event(event: InputEventMouseMotion) -> void:
-	for button_index in MOTION_BUTTONS:
-		if _is_mouse_button_pressed_in_mask(event.button_mask, button_index):
-			if button_index not in event_handlers[MOUSE_MOTION_EVENT]:
-				push_error("No handlers registered for mouse button index: %d" % button_index)
-				return
-		
-			var handlers_for_button: Array = event_handlers[MOUSE_MOTION_EVENT][button_index]
-			if handlers_for_button.is_empty():
-				return
-			
-			var handlers_snapshot := handlers_for_button.duplicate()
-			for handler_entry in handlers_snapshot:
-				if not handler_entry.is_valid():
-					handlers_snapshot.erase(handler_entry)
-					continue
-		
-				var result = handler_entry.call(event)
-				if typeof(result) == TYPE_BOOL and result:
-					return
-				if typeof(result) != TYPE_BOOL:
-					push_warning("Mouse handler without collider did not return bool; propagation continues by default.")
-			
-
-func _is_mouse_button_pressed_in_mask(button_mask: int, button_index: int) -> bool:
-	if button_index < 1:
-		return false
-	var mask_bit := 1 << (button_index - 1)
-	return (button_mask & mask_bit) != 0
-	

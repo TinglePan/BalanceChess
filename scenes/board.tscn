@@ -1,17 +1,18 @@
 [gd_scene format=3 uid="uid://b0h7eedftf4ra"]
 
-[ext_resource type="Script" uid="uid://pxw74nc3m064" path="res://scripts/board.gd" id="1_ya4ey"]
-[ext_resource type="Script" uid="uid://7812iktq375j" path="res://scripts/player_hand.gd" id="4_jyhfs"]
-[ext_resource type="Script" uid="uid://biq3vn2t0t1og" path="res://scripts/deck.gd" id="6_tefeu"]
-[ext_resource type="Script" uid="uid://cesev8grh373d" path="res://scripts/field.gd" id="7_85g3d"]
-[ext_resource type="Script" uid="uid://inm7w4agops3" path="res://scripts/main_camera.gd" id="7_choun"]
-[ext_resource type="Texture2D" uid="uid://dm21s83d56ejy" path="res://assets/sprites/grave.png" id="7_eb6dy"]
-[ext_resource type="Texture2D" uid="uid://ddt0t4p4hjj65" path="res://assets/sprites/deck.png" id="7_o6xl0"]
-[ext_resource type="FontFile" uid="uid://enmja4av0exd" path="res://assets/fonts/PatrickHand-Regular.ttf" id="7_tipki"]
-[ext_resource type="Texture2D" uid="uid://urox5vsxc3mg" path="res://assets/sprites/question.png" id="7_trceg"]
-[ext_resource type="Script" uid="uid://b7m7kbu52kebx" path="res://scripts/card_manager.gd" id="7_ya4ey"]
-[ext_resource type="Texture2D" uid="uid://baqhf7l2dd5t2" path="res://assets/sprites/trash.png" id="8_choun"]
-[ext_resource type="Script" uid="uid://ddxh1xe0ogk3l" path="res://scripts/tests/test_main.gd" id="12_eb6dy"]
+[ext_resource type="Script" uid="uid://pxw74nc3m064" path="res://scripts/board.gd" id="1_mvl7x"]
+[ext_resource type="Script" uid="uid://cesev8grh373d" path="res://scripts/field.gd" id="2_mwcd8"]
+[ext_resource type="Script" uid="uid://7812iktq375j" path="res://scripts/player_hand.gd" id="3_74c1j"]
+[ext_resource type="Script" uid="uid://b7m7kbu52kebx" path="res://scripts/cards/card_manager.gd" id="4_ba0us"]
+[ext_resource type="Script" uid="uid://biq3vn2t0t1og" path="res://scripts/deck.gd" id="5_1huyh"]
+[ext_resource type="Texture2D" uid="uid://ddt0t4p4hjj65" path="res://assets/sprites/deck.png" id="6_vevib"]
+[ext_resource type="FontFile" uid="uid://enmja4av0exd" path="res://assets/fonts/PatrickHand-Regular.ttf" id="7_m4vny"]
+[ext_resource type="Texture2D" uid="uid://urox5vsxc3mg" path="res://assets/sprites/question.png" id="8_4bs3u"]
+[ext_resource type="Texture2D" uid="uid://dm21s83d56ejy" path="res://assets/sprites/grave.png" id="9_r6ya7"]
+[ext_resource type="Texture2D" uid="uid://baqhf7l2dd5t2" path="res://assets/sprites/trash.png" id="10_i85x2"]
+[ext_resource type="Script" uid="uid://inm7w4agops3" path="res://scripts/main_camera.gd" id="11_b7otg"]
+[ext_resource type="PackedScene" uid="uid://bthlyngb6f0g0" path="res://scenes/direction_pad.tscn" id="11_mwcd8"]
+[ext_resource type="Script" uid="uid://ddxh1xe0ogk3l" path="res://scripts/tests/test_main.gd" id="12_os6cd"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_tbgi4"]
 size = Vector2(720, 140)
@@ -20,7 +21,7 @@ size = Vector2(720, 140)
 size = Vector2(62, 50)
 
 [node name="Board" type="Node2D" unique_id=628840830 node_paths=PackedStringArray("player_hand", "field", "main_camera", "card_manager", "main_deck", "graveyard", "discard_pile", "encounter_deck")]
-script = ExtResource("1_ya4ey")
+script = ExtResource("1_mvl7x")
 player_hand = NodePath("CanvasLayer/PlayerHand")
 field = NodePath("Field")
 main_camera = NodePath("Camera2D")
@@ -32,7 +33,7 @@ encounter_deck = NodePath("CanvasLayer/Decks/Encounter")
 
 [node name="Field" type="Node2D" parent="." unique_id=1015109856]
 position = Vector2(576, 324)
-script = ExtResource("7_85g3d")
+script = ExtResource("2_mwcd8")
 
 [node name="TopAnchor" type="Node2D" parent="Field" unique_id=1083499801]
 position = Vector2(0, -200)
@@ -41,7 +42,7 @@ position = Vector2(0, -200)
 
 [node name="PlayerHand" type="Node2D" parent="CanvasLayer" unique_id=1522292156]
 position = Vector2(580, 554)
-script = ExtResource("4_jyhfs")
+script = ExtResource("3_74c1j")
 
 [node name="Area2D" type="Area2D" parent="CanvasLayer/PlayerHand" unique_id=1705834927]
 
@@ -49,10 +50,10 @@ script = ExtResource("4_jyhfs")
 shape = SubResource("RectangleShape2D_tbgi4")
 
 [node name="CardManager" type="Node2D" parent="CanvasLayer" unique_id=1196650933]
-script = ExtResource("7_ya4ey")
+script = ExtResource("4_ba0us")
 
 [node name="Buttons" type="Node2D" parent="CanvasLayer" unique_id=1182507613]
-position = Vector2(1052, 504)
+position = Vector2(1052, 452)
 
 [node name="Button" type="Button" parent="CanvasLayer/Buttons" unique_id=1801967210]
 anchors_preset = 8
@@ -73,11 +74,11 @@ position = Vector2(110, 554)
 
 [node name="MainDeck" type="Node2D" parent="CanvasLayer/Decks" unique_id=1536361480]
 position = Vector2(-42, -36)
-script = ExtResource("6_tefeu")
+script = ExtResource("5_1huyh")
 
 [node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/Decks/MainDeck" unique_id=1619511424]
 texture_filter = 1
-texture = ExtResource("7_o6xl0")
+texture = ExtResource("6_vevib")
 
 [node name="Area2D" type="Area2D" parent="CanvasLayer/Decks/MainDeck" unique_id=1956834461]
 
@@ -95,7 +96,7 @@ offset_bottom = -11.0
 grow_horizontal = 0
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("7_tipki")
+theme_override_fonts/font = ExtResource("7_m4vny")
 theme_override_font_sizes/font_size = 12
 text = "1"
 horizontal_alignment = 1
@@ -103,11 +104,11 @@ vertical_alignment = 1
 
 [node name="Encounter" type="Node2D" parent="CanvasLayer/Decks" unique_id=273693875]
 position = Vector2(42, -36)
-script = ExtResource("6_tefeu")
+script = ExtResource("5_1huyh")
 
 [node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/Decks/Encounter" unique_id=134817669]
 texture_filter = 1
-texture = ExtResource("7_trceg")
+texture = ExtResource("8_4bs3u")
 
 [node name="Area2D" type="Area2D" parent="CanvasLayer/Decks/Encounter" unique_id=1462998571]
 
@@ -125,7 +126,7 @@ offset_bottom = -11.0
 grow_horizontal = 0
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("7_tipki")
+theme_override_fonts/font = ExtResource("7_m4vny")
 theme_override_font_sizes/font_size = 12
 text = "1"
 horizontal_alignment = 1
@@ -133,11 +134,11 @@ vertical_alignment = 1
 
 [node name="Grave" type="Node2D" parent="CanvasLayer/Decks" unique_id=1301171646]
 position = Vector2(-42, 36)
-script = ExtResource("6_tefeu")
+script = ExtResource("5_1huyh")
 
 [node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/Decks/Grave" unique_id=263279248]
 texture_filter = 1
-texture = ExtResource("7_eb6dy")
+texture = ExtResource("9_r6ya7")
 
 [node name="Area2D" type="Area2D" parent="CanvasLayer/Decks/Grave" unique_id=251825647]
 
@@ -155,7 +156,7 @@ offset_bottom = -11.0
 grow_horizontal = 0
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("7_tipki")
+theme_override_fonts/font = ExtResource("7_m4vny")
 theme_override_font_sizes/font_size = 12
 text = "1"
 horizontal_alignment = 1
@@ -163,11 +164,11 @@ vertical_alignment = 1
 
 [node name="Discard" type="Node2D" parent="CanvasLayer/Decks" unique_id=520520459]
 position = Vector2(42, 36)
-script = ExtResource("6_tefeu")
+script = ExtResource("5_1huyh")
 
 [node name="Sprite2D" type="Sprite2D" parent="CanvasLayer/Decks/Discard" unique_id=1953140041]
 texture_filter = 1
-texture = ExtResource("8_choun")
+texture = ExtResource("10_i85x2")
 
 [node name="Area2D" type="Area2D" parent="CanvasLayer/Decks/Discard" unique_id=1463961987]
 
@@ -185,17 +186,21 @@ offset_bottom = -11.0
 grow_horizontal = 0
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("7_tipki")
+theme_override_fonts/font = ExtResource("7_m4vny")
 theme_override_font_sizes/font_size = 12
 text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="DirectionPad" parent="CanvasLayer" unique_id=597766373 instance=ExtResource("11_mwcd8")]
+position = Vector2(1052, 552)
+scale = Vector2(0.5, 0.5)
+
 [node name="Camera2D" type="Camera2D" parent="." unique_id=239719047]
 offset = Vector2(576, 324)
-script = ExtResource("7_choun")
+script = ExtResource("11_b7otg")
 
 [node name="Test" type="Node" parent="." unique_id=1844940606]
-script = ExtResource("12_eb6dy")
+script = ExtResource("12_os6cd")
 
 [connection signal="pressed" from="CanvasLayer/Buttons/Button" to="Field" method="_on_button_pressed"]

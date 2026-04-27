@@ -1,11 +1,28 @@
-﻿extends Node
+extends Node2D
 class_name Pawn
 
 
-var card_data: CardData
+const INTERACT_BUTTON := MOUSE_BUTTON_LEFT
 
 
-func load_card_data(_card_data: CardData):
+var slot: CardSlot = null
+var card_data: CardData = null
+var logic: CardLogic = null
+@onready var interaction_menu: PawnInteractionMenu = $InteractionMenu
+
+
+func _ready() -> void:
+	slot = get_parent() as CardSlot
+	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	input_state.register_mouse_button_event_handler(INTERACT_BUTTON, $Area2D, _on_mouse_button_event)
+	
+
+func _exit_tree() -> void:
+	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	input_state.deregister_mouse_button_event_handler(INTERACT_BUTTON, $Area2D, _on_mouse_button_event)
+
+
+func load_data(_card_data: CardData):
 	card_data = _card_data
 	$Sprite2D.texture = load(card_data.sprite_path)
 	if card_data.type in CardData.CARD_TYPES_WITH_RANK:
@@ -13,6 +30,13 @@ func load_card_data(_card_data: CardData):
 		$Rank.text = str(card_data.rank)
 	else:
 		$Rank.visible = false
+	logic = CardDb.create_card_logic(_card_data)
+	if logic != null:
+		logic.set_owner(self)
+
+
+func get_logic() -> CardLogic:
+	return logic
 	
 	
 func animate_move(to_position: Vector2, duration: float = 0.2) -> Tween:
@@ -24,9 +48,32 @@ func animate_move(to_position: Vector2, duration: float = 0.2) -> Tween:
 func send_to_deck(deck: Deck, index: int = 0, duration: float = 0.2):
 	var tween := animate_move(deck.global_position, duration)
 	tween.finished.connect(_on_sent_to_deck.bind(deck, index))
+
+
+func on_focused():
+	var action_phase_effects := _get_action_phase_effects()
+	interaction_menu.open(action_phase_effects)
 	
+	
+func on_unfocused():
+	interaction_menu.close()
+
 	
 func _on_sent_to_deck(deck: Deck, index: int):
 	deck.add_card_data(card_data, index)
 	queue_free()
 
+
+func _get_action_phase_effects() -> Array:
+	if logic == null:
+		return []
+	return logic.get_effects_for_trigger(CardEffect.TriggerType.PLAY_ACTION_PHASE)
+	
+	
+func _on_mouse_button_event(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
+	print("ev pressed: ", event.pressed, " ", collider)
+	print_stack()
+	if event.pressed and event.button_index == INTERACT_BUTTON:
+		GameManager.board.card_manager.focus_pawn(self)
+		return true
+	return false

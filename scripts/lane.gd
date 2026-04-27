@@ -43,3 +43,9 @@ func send_all_pawns_to_deck(deck: Deck) -> void:
 		if i < slots_to_send.size() - 1 and graveyard_deal_delay > 0.0:
 			await get_tree().create_timer(graveyard_deal_delay).timeout
 	
+	
+func is_empty() -> bool:
+	for slot in card_slots:
+		if slot.pawn != null:
+			return false
+	return true

@@ -1,8 +1,12 @@
 [gd_scene format=3 uid="uid://c3mu0dlhp2won"]
 
-[ext_resource type="Script" uid="uid://c3isorq0pc1ps" path="res://scripts/pawn.gd" id="1_bab8k"]
+[ext_resource type="Script" uid="uid://c3isorq0pc1ps" path="res://scripts/cards/pawn.gd" id="1_bab8k"]
 [ext_resource type="Texture2D" uid="uid://udm8p8fl0dx7" path="res://assets/sprites/fused_slime.png" id="2_ccfo0"]
 [ext_resource type="FontFile" uid="uid://enmja4av0exd" path="res://assets/fonts/PatrickHand-Regular.ttf" id="3_eqwak"]
+[ext_resource type="Script" uid="uid://bt8cbn7eo744b" path="res://scripts/cards/pawn_interaction_menu.gd" id="4_w61pg"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_w61pg"]
+size = Vector2(80, 80)
 
 [node name="Pawn" type="Node2D" unique_id=247650934]
 script = ExtResource("1_bab8k")
@@ -17,10 +21,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -5.0
-offset_top = -62.0
-offset_right = 5.0
-offset_bottom = -23.0
+offset_left = 25.0
+offset_top = -46.0
+offset_right = 35.0
+offset_bottom = -7.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
@@ -31,3 +35,16 @@ theme_override_font_sizes/font_size = 28
 text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="InteractionMenu" type="Control" parent="." unique_id=1922616503]
+layout_mode = 3
+anchors_preset = 0
+offset_top = -60.0
+offset_bottom = -60.0
+script = ExtResource("4_w61pg")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=661470850]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=452389652]
+position = Vector2(-0.5, 0)
+shape = SubResource("RectangleShape2D_w61pg")

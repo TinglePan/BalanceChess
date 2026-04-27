@@ -20,6 +20,7 @@ const CARD_TYPES_WITH_RANK := [
 ]
 
 
+var id: CardDb.CardId
 var name: String
 var type: CardType
 var sprite_path: String
@@ -29,7 +30,8 @@ var description: String
 var rank: int
 
 
-func _init(_name: String, _type: CardType, _sprite_path: String, _description: String, _rank: int = 0):
+func _init(_id: CardDb.CardId, _name: String, _type: CardType, _sprite_path: String, _description: String, _rank: int = 0):
+	id = _id
 	name = _name
 	type = _type
 	description = _description
