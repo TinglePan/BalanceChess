@@ -22,7 +22,7 @@ func get_total_rank() -> int:
 	var total_rank := 0
 	for slot in card_slots:
 		if slot.pawn != null:
-			total_rank += slot.pawn.card_data.rank
+			total_rank += slot.pawn.card_data.original_rank
 	return total_rank
 	
 

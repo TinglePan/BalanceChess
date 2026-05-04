@@ -13,6 +13,7 @@ class_name Board
 
 var level: int = 0
 var turn: int = 0
+var player_board_data: PlayerBoardData
 
 
 # Called when the node enters the scene tree for the first time.
@@ -33,7 +34,7 @@ func _exit_tree() -> void:
 
 	
 func game_start() -> void:
-	GameManager.player_data = PlayerData.new(3, 3, 3, 5)
+	player_board_data = PlayerBoardData.new(GameManager.player_data)
 	for i in range(10):
 		main_deck.add_card_data(CardDb.MONSTER_CARDS[CardDb.CardId.DEFECT])
 	for i in range(10):
@@ -138,3 +139,7 @@ func deal_player_hand_cards() -> void:
 		if main_deck.card_data_list.is_empty():
 			return
 		main_deck.deal_card(player_hand)
+		
+		
+func consume_sp(amount):
+	player_board_data.sp = max(player_board_data.sp - amount, 0)

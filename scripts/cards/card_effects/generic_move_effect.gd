@@ -73,7 +73,7 @@ func _register_input_handlers_for_candidate_slots(input_state: InputState, pawn:
 				if not event.is_pressed():
 					return false
 				payload["target_slot"] = slot
-				_execute(payload)
+				_execute_played(payload)
 				# Close the interaction menu when entering move selection mode.
 				if pawn.interaction_menu != null:
 					pawn.interaction_menu.close()

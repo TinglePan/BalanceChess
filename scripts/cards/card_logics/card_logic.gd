@@ -2,8 +2,9 @@
 class_name CardLogic
 
 
-
 var owner_node: Node = null
+
+var data: CardData
 var effects_by_trigger_type: Dictionary = {
 	CardEffect.TriggerType.PLAY_ACTION_PHASE: [],
 	CardEffect.TriggerType.TRIGGER_TURN_END: [],
@@ -12,6 +13,11 @@ var effects_by_trigger_type: Dictionary = {
 	CardEffect.TriggerType.TRIGGER_MOVE_IN_FIELD: [],
 }
 
+
+func _init(_data: CardData, _owner: Node) -> void:
+	data = _data
+	owner_node = _owner
+	
 
 func set_owner(node: Node) -> void:
 	owner_node = node

@@ -27,7 +27,7 @@ func drop_position() -> Vector2:
 	
 
 func drop(card: Card, _animation_duration: float = ANIMATION_DURATION) -> void:
-	add_pawn(card.data, null)
+	add_pawn(card.logic.data, null)
 #	card.animate_move(drop_position, animation_duration)
 	card.queue_free()
 	
@@ -40,10 +40,8 @@ func add_pawn(data: CardData, from_slot: CardSlot = null) -> void:
 	add_child(new_pawn)
 	new_pawn.global_position = $DropAnchor.global_position
 	pawn = new_pawn
-	pawn.load_data(data)
-	var logic := CardDb.create_card_logic(data)
-	pawn.logic = logic
-	logic.set_owner(pawn)
+	var logic := CardDb.create_card_logic(data, pawn)
+	pawn.load(logic)
 	if from_slot == null:
 		BoardEvents.publish(BoardEvents.CARD_ENTERED_FIELD, {
 			"pawn": pawn,

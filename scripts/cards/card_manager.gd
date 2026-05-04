@@ -39,7 +39,8 @@ func create_card_at(card_data: CardData, pos: Vector2) -> Card:
 	card.mouse_entered.connect(hover_over.bind(card))
 	card.mouse_exited.connect(hover_off.bind(card))
 	card.drag_started.connect(start_drag.bind(card))
-	card.load_data(card_data)
+	var card_logic := CardDb.create_card_logic(card_data, card)
+	card.load(card_logic)
 	card.global_position = pos
 	add_child(card)
 	return card

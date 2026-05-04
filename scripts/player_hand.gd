@@ -50,7 +50,7 @@ func send_card_to(deck: Deck, index: int = 0, animation_duration: float = ANIMAT
 	update_card_positions(animation_duration)
 
 	var tween := card.animate_move(deck.global_position, animation_duration)
-	deck.add_card_data(card.data, -1)
+	deck.add_card_data(card.logic.data, -1)
 	await tween.finished
 	card.queue_free()
 	

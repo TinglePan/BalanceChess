@@ -17,6 +17,7 @@ var trigger_type: TriggerType
 # Action phase effects related properties
 var cost := 1
 var repeatable := false
+var cooldown := 0
 var mini_icon_path: String
 
 
@@ -31,16 +32,39 @@ func _init(logic: CardLogic, _args: Dictionary) -> void:
 	mini_icon_path = _args.get("mini_icon_path", "")
 
 
-func apply(payload: Dictionary = {}):
+func apply(payload: Dictionary = {}) -> void:
 	if trigger_type == TriggerType.PLAY_ACTION_PHASE:
+		if not can_play():
+			return
 		_play(payload)
 	else:
-		_execute(payload)
+		_execute_triggered(payload)
+		
+		
+func can_play() -> bool:
+	return cooldown == 0 and GameManager.board.player_board_data.sp >= cost
+		
+		
+func on_turn_end():
+	if cooldown > 0:
+		cooldown -= 1
 	
 	
-func _play(_payload: Dictionary = {}) -> void:
-	pass
+func _play(payload: Dictionary = {}) -> void:
+	_execute_played(payload)
 	
+	
+func _execute_played(payload: Dictionary = {}) -> void:
+	_execute(payload)
+	if not repeatable:
+		cooldown = 1
+	GameManager.board.consume_sp(cost)
+	
+	
+	
+func _execute_triggered(payload: Dictionary = {}) -> void:
+	_execute(payload)
+
 	
 func _execute(_payload: Dictionary = {}) -> void:
 	pass

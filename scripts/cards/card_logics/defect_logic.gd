@@ -2,7 +2,8 @@ extends CardLogic
 class_name DefectLogic
 
 
-func _init() -> void:
+func _init(_data: CardData, _owner: Node) -> void:
+	super._init(_data, _owner)
 	var move_effect := GenericMoveEffect.new(self, {
 		"cost": 1,
 		"repeatable": false,

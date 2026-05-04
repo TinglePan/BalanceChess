@@ -6,7 +6,6 @@ const INTERACT_BUTTON := MOUSE_BUTTON_LEFT
 
 
 var slot: CardSlot = null
-var card_data: CardData = null
 var logic: CardLogic = null
 @onready var interaction_menu: PawnInteractionMenu = $InteractionMenu
 var area: Area2D
@@ -28,16 +27,14 @@ func _exit_tree() -> void:
 	MyLogger.print_formatted_log("Pawn: Deregistering mouse button event handler: %d" % $Area2D.get_instance_id())
 
 
-func load_data(_card_data: CardData):
-	card_data = _card_data
-	$Sprite2D.texture = load(card_data.sprite_path)
-	if card_data.type in CardData.CARD_TYPES_WITH_RANK:
+func load(_logic: CardLogic):
+	logic = _logic
+	$Sprite2D.texture = load(logic.data.sprite_path)
+	if logic.data.type in CardData.CARD_TYPES_WITH_RANK:
 		$Rank.visible = true		
-		$Rank.text = str(card_data.rank)
+		$Rank.text = str(logic.data.original_rank)
 	else:
 		$Rank.visible = false
-	logic = CardDb.create_card_logic(_card_data)
-	logic.set_owner(self)
 
 
 func get_logic() -> CardLogic:
@@ -65,9 +62,8 @@ func on_unfocused():
 
 	
 func _on_sent_to_deck(deck: Deck, index: int):
-	deck.add_card_data(card_data, index)
+	deck.add_card_data(logic.data, index)
 	queue_free()
-
 
 
 func _get_action_phase_effects() -> Array:

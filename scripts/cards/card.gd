@@ -14,7 +14,6 @@ const DRAG_Z_INDEX := HIGHLIGHT_Z_INDEX + 100
 const DRAG_BUTTON := MOUSE_BUTTON_LEFT
 
 
-var data: CardData
 var logic: CardLogic
 var can_drag: bool = true
 var area_size: Vector2
@@ -45,17 +44,15 @@ func _on_area_2d_mouse_exited():
 	mouse_exited.emit()
 	
 	
-func load_data(card_data: CardData):
-	data = card_data
-	$Sprite.texture = load(data.sprite_path)
-	$Name.text = data.name
-	if card_data.type in CardData.CARD_TYPES_WITH_RANK:
+func load(_logic: CardLogic):
+	logic = _logic
+	$Sprite.texture = load(logic.data.sprite_path)
+	$Name.text = logic.data.name
+	if logic.data.type in CardData.CARD_TYPES_WITH_RANK:
 		$Rank.visible = true		
-		$Rank.text = str(data.rank)
+		$Rank.text = str(logic.data.rank())
 	else:
 		$Rank.visible = false
-	logic = CardDb.create_card_logic(data)
-	logic.set_owner(self)
 
 
 func get_logic() -> CardLogic:

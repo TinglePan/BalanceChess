@@ -25,10 +25,10 @@ static var ITEM_CARDS := {
 }
 
 
-static func create_card_logic(card_data: CardData) -> CardLogic:
+static func create_card_logic(card_data: CardData, owner: Node) -> CardLogic:
 	if card_data == null:
 		return null
 	var logic_script: GDScript = LOGIC_SCRIPT_BY_CARD.get(card_data.id)
 	if logic_script == null:
 		return null
-	return logic_script.new() as CardLogic
+	return logic_script.new(card_data, owner) as CardLogic
