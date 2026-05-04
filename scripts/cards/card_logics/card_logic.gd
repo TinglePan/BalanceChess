@@ -15,10 +15,6 @@ var effects_by_trigger_type: Dictionary = {
 
 func set_owner(node: Node) -> void:
 	owner_node = node
-	for trigger in effects_by_trigger_type.keys():
-		for effect in effects_by_trigger_type[trigger]:
-			if effect is CardEffect:
-				effect.bind_logic(self)
 
 
 func register_effect(trigger: CardEffect.TriggerType, effect: CardEffect) -> void:

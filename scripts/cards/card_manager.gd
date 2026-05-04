@@ -17,14 +17,21 @@ var hand_card_size: Vector2
 
 func _ready() -> void:
 	screen_size = get_viewport().size
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
-	input_state.register_fallback_mouse_button_event_handler(Card.DRAG_BUTTON, _on_mouse_button_event)
-
+	
+	
+func _enter_tree() -> void:
+	call_deferred("register_card_drag_input_handler") # Defer to ensure Board is ready to receive input state registration
+	
 
 func _process(_delta: float) -> void:
 	if card_dragging:
 		var mouse_pos := get_viewport().get_mouse_position()
 		card_dragging.position = Vector2(clamp(mouse_pos.x, 0, screen_size.x), clamp(mouse_pos.y, 0, screen_size.y))
+		
+		
+func _exit_tree() -> void:
+	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	input_state.deregister_fallback_mouse_button_event_handler(Card.DRAG_BUTTON, _on_drag_button_event)
 	
 
 func create_card_at(card_data: CardData, pos: Vector2) -> Card:
@@ -95,10 +102,14 @@ func focus_pawn(pawn: Pawn):
 	pawn_focusing = pawn
 
 
-func _on_mouse_button_event(_collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
-	if event.button_index == Card.DRAG_BUTTON:
-		if not event.pressed:
-			if card_dragging:
-				stop_drag()
-				return true
+func _on_drag_button_event(_collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
+	if not event.pressed:
+		if card_dragging:
+			stop_drag()
+			return true
 	return false
+	
+
+func register_card_drag_input_handler():
+	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	input_state.register_fallback_mouse_button_event_handler(Card.DRAG_BUTTON, _on_drag_button_event)

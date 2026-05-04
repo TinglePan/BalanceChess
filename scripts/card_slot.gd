@@ -8,19 +8,19 @@ const ANIMATION_DURATION := 0.2
 
 var pawn_scene := preload("res://scenes/Pawn.tscn") as PackedScene
 
-@onready var drop_position: Vector2 = $DropAnchor.global_position
+var lane: Lane
+var area: Area2D
 var pawn: Pawn
 
 
 func _ready() -> void:
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
-	input_state.register_mouse_button_event_handler(MOUSE_BUTTON_LEFT, $Area2D, _on_mouse_button_event)
-
-
-func _exit_tree() -> void:
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
-	input_state.deregister_mouse_button_event_handler(MOUSE_BUTTON_LEFT, $Area2D, _on_mouse_button_event)
-
+	lane = get_parent() as Lane
+	area = $Area2D as Area2D
+	
+	
+func drop_position() -> Vector2:
+	return $DropAnchor.global_position
+	
 
 func drop(card: Card, _animation_duration: float = ANIMATION_DURATION) -> void:
 	add_pawn(card.data, null)
@@ -39,6 +39,7 @@ func add_pawn(data: CardData, from_slot: CardSlot = null) -> void:
 	pawn.load_data(data)
 	var logic := CardDb.create_card_logic(data)
 	pawn.logic = logic
+	logic.set_owner(pawn)
 	if from_slot == null:
 		BoardEvents.publish(BoardEvents.CARD_ENTERED_FIELD, {
 			"pawn": pawn,
@@ -62,7 +63,7 @@ func move_pawn_to_slot(target_slot: CardSlot) -> bool:
 
 	remove_child(pawn)
 	target_slot.add_child(pawn)
-	pawn.global_position = target_slot.drop_position
+	pawn.global_position = target_slot.drop_position()
 	target_slot.pawn = pawn
 	BoardEvents.publish(BoardEvents.CARD_MOVED_BETWEEN_SLOTS, {
 		"from_slot": self,
@@ -86,12 +87,5 @@ func send_pawn_to_deck(deck: Deck, index: int = 0, animation_duration: float = A
 	pawn = null
 
 
-func _on_mouse_button_event(_collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
-	if not event.is_pressed():
-		return false
-	var board := GameManager.board
-	if board.input_state == Board.InputState.PICK_SLOT:
-		# TODO
-		return true
-	return false
-
+func coordinates() -> Array:
+	return [lane.room.coordinates(), lane.side, lane.slot_index(self)]

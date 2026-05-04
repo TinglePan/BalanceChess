@@ -9,9 +9,11 @@ var card_data_list := []
 
 
 func _ready() -> void:
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
-	input_state.register_mouse_button_event_handler(DEAL_CARD_BUTTON, $Area2D, _on_deal_card_button_event)
 	update_count_label()
+	
+	
+func _enter_tree() -> void:
+	call_deferred("_register_deal_card_input_handler")
 	
 	
 func _exit_tree() -> void:
@@ -71,3 +73,8 @@ func _on_deal_card_button_event(_collider: CollisionObject2D, event: InputEventM
 		deal_card(GameManager.board.player_hand)
 		return true
 	return false
+	
+
+func _register_deal_card_input_handler():
+	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	input_state.register_mouse_button_event_handler(DEAL_CARD_BUTTON, $Area2D, _on_deal_card_button_event)

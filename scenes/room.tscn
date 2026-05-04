@@ -38,6 +38,7 @@ position = Vector2(-72, 8)
 [node name="EnemyLane" parent="." unique_id=55940230 instance=ExtResource("3_jxe34")]
 z_index = 1
 position = Vector2(72, 8)
+side = 1
 
 [node name="Area2D" type="Area2D" parent="." unique_id=2088746820]
 

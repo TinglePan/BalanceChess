@@ -17,17 +17,20 @@ var turn: int = 0
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+	var canvas_layer_id := $CanvasLayer.get_instance_id()
+	InputManager.ui_canvas_instance_id = canvas_layer_id
+	var neutral_input_state := InputState.new(InputState.InputStateId.BOARD_NEUTRAL, [0, canvas_layer_id])
+	InputManager.register_input_state(neutral_input_state)
+	
+	
+func _enter_tree() -> void:
 	GameManager.board = self
-	InputManager.ui_canvas_instance_id = $CanvasLayer.get_instance_id()
-
+	
 
 func _exit_tree() -> void:
 	if GameManager.board == self:
 		GameManager.board = null
-	Input.set_custom_mouse_cursor(null)
 
-
-	
 	
 func game_start() -> void:
 	GameManager.player_data = PlayerData.new(3, 3, 3, 5)
@@ -40,6 +43,9 @@ func game_start() -> void:
 	if main_camera != null:
 		# Defer to ensure field nodes are fully laid out before fitting camera.
 		main_camera.call_deferred("apply_initial_fit_zoom")
+	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	MyLogger.print_formatted_log("Board: Pushing input state: %d" % input_state.id)
+	InputManager.push_input_state(input_state)
 	level_start()
 	
 	
@@ -57,12 +63,10 @@ func level_start() -> void:
 	
 func level_reset() -> void:
 	for room in field.rooms:
-		for slot in room.player_lane.card_slots:
-			if slot.pawn != null:
-				slot.send_pawn_to_deck(main_deck)
-		for slot in room.enemy_lane.card_slots:
-			if slot.pawn != null:
-				slot.send_pawn_to_deck(main_deck)
+		for lane in room.lanes.values():
+			for slot in lane.card_slots:
+				if slot.pawn != null:
+					slot.send_pawn_to_deck(main_deck)
 	for slot in field.bonus_slots:
 		if slot.pawn != null:
 			slot.send_pawn_to_deck(encounter_deck)
@@ -107,7 +111,7 @@ func turn_end() -> void:
 	
 func deal_enmey_cards():
 	for room in field.rooms:
-		var target_slot := room.enemy_lane.first_empty_slot()
+		var target_slot := room.enemy_lane().first_empty_slot() as CardSlot
 		if target_slot != null:
 			main_deck.deal_card(target_slot)
 			

@@ -14,15 +14,18 @@ func current_input_state() -> InputState:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
-		current_input_state().dispatch_mouse_button_event(event)
-	elif event is InputEventMouseMotion:
-		current_input_state().dispatch_mouse_motion_event(event)
+	var state := current_input_state()
+	if state != null:
+		if event is InputEventMouseButton:
+			state.dispatch_mouse_button_event(event)
+		elif event is InputEventMouseMotion:
+			state.dispatch_mouse_motion_event(event)
 		
 		
 func register_input_state(state: InputState) -> void:
 	if state.id in input_states:
-		push_warning("Input state with id %d is already registered" % state.id)
+		push_error("Input state with id %d is already registered" % state.id)
+		return
 	input_states[state.id] = state
 	
 	
@@ -35,8 +38,9 @@ func get_input_state(state_id: InputState.InputStateId) -> InputState:
 		
 func push_input_state(next_state: InputState) -> void:
 	var prev_state := current_input_state()
-	if prev_state.id == next_state.id:
+	if prev_state == next_state or prev_state != null and next_state != null and prev_state.id == next_state.id:
 		return
+	MyLogger.print_formatted_log("Pushing input state: %d" % next_state.id)
 	if prev_state != null:
 		prev_state.on_exit()
 	input_state_stack.append(next_state)
@@ -50,6 +54,7 @@ func pop_input_state() -> void:
 	var prev_state := current_input_state()
 	input_state_stack.pop_back()
 	var next_state := current_input_state()
+	MyLogger.print_formatted_log("Popping input state: %d to %d" % [prev_state.id, next_state.id if next_state != null else -1])
 	if prev_state != null:
 		prev_state.on_exit()
 	if next_state != null:

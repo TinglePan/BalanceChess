@@ -2,9 +2,21 @@ extends Node2D
 class_name Lane
 
 
+enum LaneSide {
+	PLAYER,
+	ENEMY
+}
+
+
 @export var card_slots: Array[CardSlot]
 @export var graveyard_deal_delay: float = 0.08
+@export var side: LaneSide
+var room: Room
 
+
+func _ready() -> void:
+	room = get_parent() as Room
+	
 
 func get_total_rank() -> int:
 	var total_rank := 0
@@ -49,3 +61,7 @@ func is_empty() -> bool:
 		if slot.pawn != null:
 			return false
 	return true
+	
+	
+func slot_index(slot: CardSlot) -> int:
+	return card_slots.find(slot)

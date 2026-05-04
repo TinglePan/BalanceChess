@@ -1,4 +1,4 @@
-﻿extends RefCounted
+extends RefCounted
 class_name InputState
 
 
@@ -36,17 +36,13 @@ var event_handlers := {
 }
 
 var id: InputStateId = InputStateId.BOARD_NEUTRAL
-var canvas_id_list: Array 
-var input_filter: Callable
-var input_handler: Callable
+var canvas_id_list: Array[int]
 var alternate_mouse_cursor: Texture2D = null
 
 
-func _init(_id: InputStateId, _canvas_id_list: Array, _input_filter: Callable = Callable(), _input_handler: Callable = Callable(), _alternate_mouse_cursor: Texture2D = null) -> void:
+func _init(_id: InputStateId, _canvas_id_list: Array[int], _alternate_mouse_cursor: Texture2D = null) -> void:
 	id = _id
 	canvas_id_list = _canvas_id_list
-	input_filter = _input_filter
-	input_handler = _input_handler
 	alternate_mouse_cursor = _alternate_mouse_cursor
 
 
@@ -76,6 +72,7 @@ func register_fallback_mouse_button_event_handler(button_index: int, handler: Ca
 		
 	
 func deregister_mouse_button_event_handler(button_index: int, collider: CollisionObject2D = null, handler: Callable = Callable()) -> void:
+	MyLogger.print_formatted_log("Attempting to deregister mouse button event handler for button index %d, collider id %s" % [button_index, str(collider.get_instance_id())] )
 	if button_index in event_handlers[InputEventId.MOUSE_BUTTON]:
 		if collider == null:
 			if handler.is_valid():
@@ -84,6 +81,16 @@ func deregister_mouse_button_event_handler(button_index: int, collider: Collisio
 				event_handlers[InputEventId.MOUSE_BUTTON][button_index][UNHANDLED_EVENT_COLLIDER_ID].clear()
 		else:
 			event_handlers[InputEventId.MOUSE_BUTTON][button_index].erase(collider.get_instance_id())
+	else:
+		push_error("Invalid mouse button index: %d" % button_index)
+		
+		
+func deregister_fallback_mouse_button_event_handler(button_index: int, handler: Callable = Callable()) -> void:
+	if button_index in event_handlers[InputEventId.MOUSE_BUTTON]:
+		if handler.is_valid():
+			event_handlers[InputEventId.MOUSE_BUTTON][button_index][UNHANDLED_EVENT_COLLIDER_ID].erase(handler)
+		else:
+			event_handlers[InputEventId.MOUSE_BUTTON][button_index][UNHANDLED_EVENT_COLLIDER_ID].clear()
 	else:
 		push_error("Invalid mouse button index: %d" % button_index)
 
@@ -119,18 +126,6 @@ func on_exit() -> void:
 		Input.set_custom_mouse_cursor(null)
 
 
-func can_receive_input(_collider: CollisionObject2D) -> bool:
-	if input_filter == null or not input_filter.is_valid():
-		return true
-	return input_filter.call(_collider)
-	
-
-func handle_input(_collider: CollisionObject2D, _event: InputEvent) -> bool:
-	if input_handler == null or not input_handler.is_valid():
-		return false
-	return input_handler.call(_collider, _event)
-	
-	
 func dispatch_mouse_button_event(event: InputEventMouseButton) -> void:
 	if event.button_index in event_handlers[InputEventId.MOUSE_BUTTON]:
 		var handlers_for_button: Dictionary = event_handlers[InputEventId.MOUSE_BUTTON][event.button_index]
@@ -147,7 +142,7 @@ func dispatch_mouse_button_event(event: InputEventMouseButton) -> void:
 			if not handler.is_valid():
 				handlers_for_button.erase(collider_id)
 				continue
-	
+			MyLogger.print_formatted_log("Dispatching mouse button event to handler for collider %s" % collider_id)
 			var result = handler.call(collider, event)
 			if typeof(result) == TYPE_BOOL and result:
 				return

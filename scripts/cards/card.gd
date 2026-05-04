@@ -26,8 +26,15 @@ func _ready() -> void:
 	var collision_shape := $Area2D/CollisionShape2D
 	var rect_shape := collision_shape.shape as RectangleShape2D
 	area_size = rect_shape.size * collision_shape.global_scale.abs()
+	
+	
+func _enter_tree() -> void:
+	call_deferred("_register_mouse_input_handlers")
+
+	
+func _exit_tree() -> void:
 	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
-	input_state.register_mouse_button_event_handler(DRAG_BUTTON, $Area2D, _on_mouse_button_event)
+	input_state.deregister_mouse_button_event_handler(DRAG_BUTTON, $Area2D, _on_mouse_button_event)
 	
 
 func _on_area_2d_mouse_entered():
@@ -81,3 +88,8 @@ func _on_mouse_button_event(_collider: CollisionObject2D, event: InputEventMouse
 		drag_started.emit()
 		return true
 	return false
+	
+	
+func _register_mouse_input_handlers() -> void:
+	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	input_state.register_mouse_button_event_handler(DRAG_BUTTON, $Area2D, _on_mouse_button_event)

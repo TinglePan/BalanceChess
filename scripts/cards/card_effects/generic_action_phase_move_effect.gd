@@ -1,19 +1,21 @@
-﻿extends ActionPhaseEffect
+extends ActionPhaseEffect
 class_name GenericActionPhaseMoveEffect
 
 
-var move_distance := 1
+var move_distance: int
+var keep_lane: bool
 var _active_input_state: InputState = null
 
 
-func _init(_card_logic: CardLogic, _move_distance: int) -> void:
+func _init(_card_logic: CardLogic, _move_distance: int = 1, _keep_lane: bool = true) -> void:
 	super._init(_card_logic)
 	move_distance = _move_distance
-	mini_icon_path = "res://assets/ui/icons/move_icon.png"
+	keep_lane = _keep_lane
+	mini_icon_path = "res://assets/ui/icons/boots.png"
 
 
 func apply(_payload: Dictionary) -> void:
-	var pawn := card_logic.owner as Pawn
+	var pawn := card_logic.owner_node as Pawn
 	if pawn == null or not is_instance_valid(pawn):
 		return
 
@@ -21,9 +23,6 @@ func apply(_payload: Dictionary) -> void:
 	if from_slot == null or not is_instance_valid(from_slot):
 		return
 
-	# Close the interaction menu when entering move selection mode.
-	if pawn.interaction_menu != null:
-		pawn.interaction_menu.close()
 
 	# Build and push a dedicated temporary input state for this move selection.
 	_active_input_state = InputState.new(
@@ -33,7 +32,7 @@ func apply(_payload: Dictionary) -> void:
 
 	# Left click on any valid target slot moves the pawn.
 	for slot in _get_slots_within_distance(from_slot, move_distance):
-		var area := slot.get_node_or_null("Area2D") as CollisionObject2D
+		var area := slot.area
 		if area == null:
 			continue
 		_active_input_state.register_mouse_button_event_handler(
@@ -42,7 +41,11 @@ func apply(_payload: Dictionary) -> void:
 			func(_collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
 				if not event.is_pressed():
 					return false
+				print(slot.coordinates())
 				move_to_slot(slot)
+				# Close the interaction menu when entering move selection mode.
+				if pawn.interaction_menu != null:
+					pawn.interaction_menu.close()
 				return true
 		)
 
@@ -60,7 +63,7 @@ func apply(_payload: Dictionary) -> void:
 
 
 func move_to_slot(target_slot: CardSlot) -> bool:
-	var pawn := card_logic.owner as Pawn
+	var pawn := card_logic.owner_node as Pawn
 	if pawn == null or not is_instance_valid(pawn):
 		return false
 
@@ -95,7 +98,7 @@ func _get_slots_within_distance(from_slot: CardSlot, max_distance: int) -> Array
 	if field == null:
 		return result
 
-	var from_room := from_slot.get_parent() as Room
+	var from_room := from_slot.lane.room
 	if from_room == null:
 		return result
 
@@ -114,14 +117,10 @@ func _get_slots_within_distance(from_slot: CardSlot, max_distance: int) -> Array
 
 		var distance := absi(target_index.x - from_index.x) + absi(target_index.y - from_index.y)
 		if distance <= max_distance:
-			for slot in target_room.card_slots:
-				var card_slot := slot as CardSlot
-				if card_slot == null:
+			for lane in target_room.lanes.values():
+				if keep_lane and lane.side != from_slot.lane.side:
 					continue
-				if card_slot == from_slot:
-					continue
-				if card_slot.pawn != null:
-					continue
-				result.append(card_slot)
-
+				for slot in lane.card_slots:
+					if slot.pawn == null:
+						result.append(slot)
 	return result

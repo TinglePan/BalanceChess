@@ -13,13 +13,17 @@ var logic: CardLogic = null
 
 func _ready() -> void:
 	slot = get_parent() as CardSlot
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
-	input_state.register_mouse_button_event_handler(INTERACT_BUTTON, $Area2D, _on_mouse_button_event)
+	
+	
+func _enter_tree() -> void:
+	call_deferred("_register_mouse_input_handlers") # Defer to ensure Board is ready to receive input state registration
+	MyLogger.print_formatted_log("Pawn: Registering mouse button event handler: %d" % $Area2D.get_instance_id())
 	
 
 func _exit_tree() -> void:
 	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
 	input_state.deregister_mouse_button_event_handler(INTERACT_BUTTON, $Area2D, _on_mouse_button_event)
+	MyLogger.print_formatted_log("Pawn: Deregistering mouse button event handler: %d" % $Area2D.get_instance_id())
 
 
 func load_data(_card_data: CardData):
@@ -31,8 +35,7 @@ func load_data(_card_data: CardData):
 	else:
 		$Rank.visible = false
 	logic = CardDb.create_card_logic(_card_data)
-	if logic != null:
-		logic.set_owner(self)
+	logic.set_owner(self)
 
 
 func get_logic() -> CardLogic:
@@ -71,9 +74,15 @@ func _get_action_phase_effects() -> Array:
 	
 	
 func _on_mouse_button_event(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
-	print("ev pressed: ", event.pressed, " ", collider)
-	print_stack()
+#	print("ev pressed: ", event.pressed, " ", collider)
+#	print_stack()
 	if event.pressed and event.button_index == INTERACT_BUTTON:
+		MyLogger.print_formatted_log("pawn clicked with id: %d" % collider.get_instance_id())
 		GameManager.board.card_manager.focus_pawn(self)
 		return true
 	return false
+
+
+func _register_mouse_input_handlers() -> void:
+	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	input_state.register_mouse_button_event_handler(INTERACT_BUTTON, $Area2D, _on_mouse_button_event)
