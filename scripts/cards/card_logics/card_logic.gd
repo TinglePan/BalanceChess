@@ -17,9 +17,10 @@ func set_owner(node: Node) -> void:
 	owner_node = node
 
 
-func register_effect(trigger: CardEffect.TriggerType, effect: CardEffect) -> void:
+func register_effect(effect: CardEffect) -> void:
 	if effect == null:
 		return
+	var trigger := effect.trigger_type
 	if not effects_by_trigger_type.has(trigger):
 		effects_by_trigger_type[trigger] = []
 	var effects := effects_by_trigger_type[trigger] as Array

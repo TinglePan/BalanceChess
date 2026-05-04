@@ -69,6 +69,7 @@ func _on_sent_to_deck(deck: Deck, index: int):
 	queue_free()
 
 
+
 func _get_action_phase_effects() -> Array:
 	if logic == null:
 		return []

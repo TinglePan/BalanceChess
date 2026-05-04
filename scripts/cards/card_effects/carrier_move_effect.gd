@@ -1,12 +1,18 @@
-﻿extends GenericActionPhaseMoveEffect
-class_name ActionPhaseCarrierMoveEffect
+﻿extends GenericMoveEffect
+class_name CarrierMoveEffect
 
 
-var carry_capacity := 1
-var carried_pawns: Array[Pawn] = []
+var carry_capacity: int
+var carried_pawns: Array[Pawn]
 
 
-func apply(_payload: Dictionary) -> void:
+func _init(_card_logic: CardLogic, args: Dictionary) -> void:
+	super._init(_card_logic, args)
+	carry_capacity = args.get("carry_capacity", 1)
+	carried_pawns = []
+
+
+func _play(payload: Dictionary = {}) -> void:
 	var pawn := card_logic.owner_node as Pawn
 	if pawn == null or not is_instance_valid(pawn):
 		return
@@ -19,7 +25,7 @@ func apply(_payload: Dictionary) -> void:
 		InputState.InputStateId.BOARD_MOVE_PICK_SLOT_CARRIER,
 		[0]
 	)
-	_register_input_handlers_for_candidate_slots(_input_state, pawn, from_slot)
+	_register_input_handlers_for_candidate_slots(_input_state, pawn, from_slot, payload)
 	_register_input_handlers_for_candidate_pawns(_input_state, pawn, from_slot)
 
 	_input_state.register_fallback_mouse_button_event_handler(
@@ -34,23 +40,23 @@ func apply(_payload: Dictionary) -> void:
 	InputManager.push_input_state(_input_state)
 
 
-func move_to_slot(target_slot: CardSlot) -> bool:
+func _execute(payload: Dictionary = {}) -> void:
 	var carrier_pawn := card_logic.owner_node as Pawn
 	if carrier_pawn == null or not is_instance_valid(carrier_pawn):
-		return false
+		return
 
 	var from_slot := carrier_pawn.slot
 	if from_slot == null or not is_instance_valid(from_slot):
-		return false
+		return
 
+	var target_slot := payload.get("target_slot", null) as CardSlot
 	var moved := from_slot.move_pawn_to_slot(target_slot)
 	if not moved:
-		return false
+		return
 
 	carrier_pawn.slot = target_slot
 	_move_carried_pawns(target_slot)
 	_exit_move_pick_state()
-	return true
 
 
 func _exit_move_pick_state() -> void:

@@ -1,5 +1,5 @@
-extends ActionPhaseEffect
-class_name GenericActionPhaseMoveEffect
+extends CardEffect
+class_name GenericMoveEffect
 
 
 var move_distance: int
@@ -7,14 +7,14 @@ var keep_lane: bool
 var _input_state: InputState = null
 
 
-func _init(_card_logic: CardLogic, _move_distance: int = 1, _keep_lane: bool = true) -> void:
-	super._init(_card_logic)
-	move_distance = _move_distance
-	keep_lane = _keep_lane
+func _init(_card_logic: CardLogic, args: Dictionary) -> void:
+	super._init(_card_logic, args)
+	move_distance = args.get("move_distance", 1)
+	keep_lane = args.get("keep_lane", false)
 	mini_icon_path = "res://assets/ui/icons/boots.png"
 
 
-func apply(_payload: Dictionary) -> void:
+func _play(payload: Dictionary = {}) -> void:
 	var pawn := card_logic.owner_node as Pawn
 	if pawn == null or not is_instance_valid(pawn):
 		return
@@ -28,7 +28,7 @@ func apply(_payload: Dictionary) -> void:
 		[0]
 	)
 	
-	_register_input_handlers_for_candidate_slots(_input_state, pawn, from_slot)
+	_register_input_handlers_for_candidate_slots(_input_state, pawn, from_slot, payload)
 
 	# Right click cancels and exits this input state.
 	_input_state.register_fallback_mouse_button_event_handler(
@@ -43,24 +43,25 @@ func apply(_payload: Dictionary) -> void:
 	InputManager.push_input_state(_input_state)
 
 
-func move_to_slot(target_slot: CardSlot) -> bool:
+func _execute(payload: Dictionary = {}) -> void:
 	var pawn := card_logic.owner_node as Pawn
 	if pawn == null or not is_instance_valid(pawn):
-		return false
+		return
 
 	var from_slot := pawn.slot
 	if from_slot == null or not is_instance_valid(from_slot):
-		return false
+		return
 
+	var target_slot := payload.get("target_slot", null) as CardSlot
+	
 	var moved := from_slot.move_pawn_to_slot(target_slot)
 	if moved:
 		# Keep pawn.slot in sync with the move result.
 		pawn.slot = target_slot
 	_exit_move_pick_state()
-	return moved
 
 
-func _register_input_handlers_for_candidate_slots(input_state: InputState, pawn: Pawn, from_slot: CardSlot) -> void:
+func _register_input_handlers_for_candidate_slots(input_state: InputState, pawn: Pawn, from_slot: CardSlot, payload: Dictionary) -> void:
 	for slot in _get_slots_within_distance(from_slot, move_distance):
 		var area := slot.area
 		if area == null:
@@ -71,7 +72,8 @@ func _register_input_handlers_for_candidate_slots(input_state: InputState, pawn:
 			func(_collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
 				if not event.is_pressed():
 					return false
-				move_to_slot(slot)
+				payload["target_slot"] = slot
+				_execute(payload)
 				# Close the interaction menu when entering move selection mode.
 				if pawn.interaction_menu != null:
 					pawn.interaction_menu.close()
