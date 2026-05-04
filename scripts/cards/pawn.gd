@@ -9,10 +9,12 @@ var slot: CardSlot = null
 var card_data: CardData = null
 var logic: CardLogic = null
 @onready var interaction_menu: PawnInteractionMenu = $InteractionMenu
+var area: Area2D
 
 
 func _ready() -> void:
 	slot = get_parent() as CardSlot
+	area = $Area2D as Area2D
 	
 	
 func _enter_tree() -> void:

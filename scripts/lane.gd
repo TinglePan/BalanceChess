@@ -44,6 +44,15 @@ func first_empty_slot() -> CardSlot:
 	return null
 	
 	
+func next_slot(from_slot: CardSlot) -> CardSlot:
+	var index := slot_index(from_slot)
+	if index == -1:
+		push_error("CardSlot not found in lane: ", from_slot.name)
+		return null
+	var next_index := (index + 1) % card_slots.size()
+	return card_slots[next_index]
+	
+	
 func send_all_pawns_to_deck(deck: Deck) -> void:
 	var slots_to_send: Array[CardSlot] = []
 	for slot in card_slots:

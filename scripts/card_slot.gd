@@ -18,6 +18,10 @@ func _ready() -> void:
 	area = $Area2D as Area2D
 	
 	
+func is_empty() -> bool:
+	return pawn == null
+	
+	
 func drop_position() -> Vector2:
 	return $DropAnchor.global_position
 	

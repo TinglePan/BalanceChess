@@ -4,7 +4,7 @@ class_name GenericActionPhaseMoveEffect
 
 var move_distance: int
 var keep_lane: bool
-var _active_input_state: InputState = null
+var _input_state: InputState = null
 
 
 func _init(_card_logic: CardLogic, _move_distance: int = 1, _keep_lane: bool = true) -> void:
@@ -18,39 +18,20 @@ func apply(_payload: Dictionary) -> void:
 	var pawn := card_logic.owner_node as Pawn
 	if pawn == null or not is_instance_valid(pawn):
 		return
-
 	var from_slot := pawn.slot
 	if from_slot == null or not is_instance_valid(from_slot):
 		return
-
-
+		
 	# Build and push a dedicated temporary input state for this move selection.
-	_active_input_state = InputState.new(
+	_input_state = InputState.new(
 		InputState.InputStateId.BOARD_MOVE_PICK_SLOT,
 		[0]
 	)
-
-	# Left click on any valid target slot moves the pawn.
-	for slot in _get_slots_within_distance(from_slot, move_distance):
-		var area := slot.area
-		if area == null:
-			continue
-		_active_input_state.register_mouse_button_event_handler(
-			MOUSE_BUTTON_LEFT,
-			area,
-			func(_collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
-				if not event.is_pressed():
-					return false
-				print(slot.coordinates())
-				move_to_slot(slot)
-				# Close the interaction menu when entering move selection mode.
-				if pawn.interaction_menu != null:
-					pawn.interaction_menu.close()
-				return true
-		)
+	
+	_register_input_handlers_for_candidate_slots(_input_state, pawn, from_slot)
 
 	# Right click cancels and exits this input state.
-	_active_input_state.register_fallback_mouse_button_event_handler(
+	_input_state.register_fallback_mouse_button_event_handler(
 		MOUSE_BUTTON_RIGHT,
 		func(_collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
 			if not event.is_pressed():
@@ -59,7 +40,7 @@ func apply(_payload: Dictionary) -> void:
 			return true
 	)
 
-	InputManager.push_input_state(_active_input_state)
+	InputManager.push_input_state(_input_state)
 
 
 func move_to_slot(target_slot: CardSlot) -> bool:
@@ -79,14 +60,33 @@ func move_to_slot(target_slot: CardSlot) -> bool:
 	return moved
 
 
+func _register_input_handlers_for_candidate_slots(input_state: InputState, pawn: Pawn, from_slot: CardSlot) -> void:
+	for slot in _get_slots_within_distance(from_slot, move_distance):
+		var area := slot.area
+		if area == null:
+			continue
+		input_state.register_mouse_button_event_handler(
+			MOUSE_BUTTON_LEFT,
+			area,
+			func(_collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
+				if not event.is_pressed():
+					return false
+				move_to_slot(slot)
+				# Close the interaction menu when entering move selection mode.
+				if pawn.interaction_menu != null:
+					pawn.interaction_menu.close()
+				return true
+		)
+
+
 func _exit_move_pick_state() -> void:
-	if _active_input_state == null:
+	if _input_state == null:
 		return
 
 	# Pop only if this state is still current.
-	if InputManager.current_input_state() == _active_input_state:
+	if InputManager.current_input_state() == _input_state:
 		InputManager.pop_input_state()
-	_active_input_state = null
+	_input_state = null
 
 
 func _get_slots_within_distance(from_slot: CardSlot, max_distance: int) -> Array[CardSlot]:
