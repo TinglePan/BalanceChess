@@ -12,6 +12,7 @@ var effects_by_trigger_type: Dictionary = {
 	CardEffect.TriggerType.TRIGGER_LEAVE_FIELD: [],
 	CardEffect.TriggerType.TRIGGER_MOVE_IN_FIELD: [],
 }
+var buffs: Dictionary = {}
 
 
 func _init(_data: CardData, _owner: Node) -> void:
@@ -58,3 +59,20 @@ func on_leave_field(payload: Dictionary) -> void:
 
 func on_move_in_field(payload: Dictionary) -> void:
 	trigger_effect(CardEffect.TriggerType.TRIGGER_MOVE_IN_FIELD, payload)
+
+
+func add_buff(buff: CardBuff) -> void:
+	var tid = buff.tid
+	if not buffs.has(tid):
+		buffs[tid] = []
+	if buff.is_unique:
+		for existing_buff in buffs[tid]:
+			if not existing_buff.is_unique:
+				push_error("Buff with tid %s is marked as unique but an existing buff is not unique." % tid)
+				return
+			buffs[tid].erase(existing_buff)
+	for existing_buff in buffs[tid]:
+		if existing_buff.source == buff.source:
+			existing_buff.add_stack(buff.current_stacks)
+			return
+	buffs[tid].append(buff)

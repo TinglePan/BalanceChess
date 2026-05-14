@@ -5,7 +5,7 @@ const DEFAULT_COLLISION_LAYER := 1
 
 var ui_canvas_instance_id: int
 
-var input_states: Dictionary[InputState.InputStateId, InputState] = {}
+var input_states: Dictionary[InputState.InputStateType, Array] = {}
 var input_state_stack: Array[InputState]
 
 
@@ -23,17 +23,24 @@ func _unhandled_input(event: InputEvent) -> void:
 		
 		
 func register_input_state(state: InputState) -> void:
-	if state.id in input_states:
-		push_error("Input state with id %d is already registered" % state.id)
-		return
-	input_states[state.id] = state
+	if state.id not in input_states:
+		input_states[state.id] = []
+	input_states[state.id].append(state)
 	
 	
-func get_input_state(state_id: InputState.InputStateId) -> InputState:
-	if state_id in input_states:
-		return input_states[state_id]
+func get_input_state(state_id: InputState.InputStateType) -> InputState:
+	if state_id in input_states and input_states[state_id].size() > 0:
+		if input_states[state_id].size() > 1:
+			push_warning("Multiple input states registered with id %d, returning the most recently registered one" % state_id)
+		return input_states[state_id].back()
 	push_error("Input state with id %d is not registered" % state_id)
 	return null
+	
+
+func get_input_states(state_id: InputState.InputStateType) -> Array[InputState]:
+	if state_id in input_states:
+		return input_states[state_id]
+	return []
 		
 		
 func push_input_state(next_state: InputState) -> void:
@@ -46,6 +53,13 @@ func push_input_state(next_state: InputState) -> void:
 	input_state_stack.append(next_state)
 	if next_state != null:
 		next_state.on_enter()
+		
+		
+func exit_input_state(input_state: InputState) -> void:
+	var current_state := current_input_state()
+	if current_state == null or current_state != input_state:
+		return
+	pop_input_state()
 		
 		
 func pop_input_state() -> void:

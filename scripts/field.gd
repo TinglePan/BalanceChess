@@ -2,6 +2,14 @@ extends Node2D
 class_name Field
 
 
+enum Direction {
+	LEFT,
+	RIGHT,
+	UP,
+	DOWN
+}
+
+
 @export var room_scene := preload("res://scenes/room.tscn") as PackedScene
 @export var bonus_slot_scene := preload("res://scenes/bonus_slot.tscn") as PackedScene
 
@@ -11,43 +19,8 @@ var column_count: int = 0
 var rooms: Array[Room] = []
 var bonus_slots: Array[CardSlot] = []
 var engaging_rooms: Array[Room] = []
-var _pick_engage_rooms_input_states: Dictionary = {}
 @export var horizontal_spacing_px: float = 16
 @export var vertical_spacing_px: float = 24
-
-
-func _ready() -> void:
-	var input_state_ids := [
-		InputState.InputStateId.BOARD_PICK_ENGAGE_ROOMS_UP,
-		InputState.InputStateId.BOARD_PICK_ENGAGE_ROOMS_DOWN,
-		InputState.InputStateId.BOARD_PICK_ENGAGE_ROOMS_LEFT,
-		InputState.InputStateId.BOARD_PICK_ENGAGE_ROOMS_RIGHT,
-	]
-	for state_id in input_state_ids:
-		var state := InputState.new(
-			state_id,
-			[0]
-		)
-		InputManager.register_input_state(state)
-		state.register_fallback_mouse_button_event_handler(MOUSE_BUTTON_RIGHT, _on_pick_engage_rooms_mouse_right_click)
-		_pick_engage_rooms_input_states[state_id] = state
-		
-	for room_node in rooms:
-		var room := room_node as Room
-		if room != null:
-			_register_room_in_pick_engage_rooms_input_state(room)
-
-
-func _exit_tree() -> void:
-	for room_node in rooms:
-		var room := room_node as Room
-		if room != null:
-			_deregister_room_from_alternate_states(room)
-
-	for state in _pick_engage_rooms_input_states.values():
-		state.deregister_fallback_mouse_button_event_handler(MOUSE_BUTTON_RIGHT, _on_pick_engage_rooms_mouse_right_click)
-
-	_pick_engage_rooms_input_states.clear()
 
 
 func get_boundary() -> Rect2:
@@ -117,7 +90,7 @@ func room_index(room: Room) -> Vector2i:
 	return Vector2i(column, row)
 
 
-func set_engaging_rooms_from(room: Room) -> void:
+func set_engaging_rooms_from(room: Room, direction: Direction) -> void:
 	var ordered_rooms: Array[Room] = []
 	if room == null or row_count <= 0 or column_count <= 0:
 		return 
@@ -125,18 +98,18 @@ func set_engaging_rooms_from(room: Room) -> void:
 	var start_index := room_index(room)
 	if start_index.x < 0 or start_index.y < 0:
 		return
-
-	match GameManager.board.current_input_state.id:
-		InputState.InputStateId.BOARD_PICK_ENGAGE_ROOMS_LEFT:
+		
+	match direction:
+		Direction.LEFT:
 			for column in range(column_count - 1, -1, -1):
 				_add_room_at(column, start_index.y, ordered_rooms)
-		InputState.InputStateId.BOARD_PICK_ENGAGE_ROOMS_RIGHT:
+		Direction.RIGHT:
 			for column in range(column_count):
 				_add_room_at(column, start_index.y, ordered_rooms)
-		InputState.InputStateId.BOARD_PICK_ENGAGE_ROOMS_UP:
+		Direction.UP:
 			for row in range(row_count - 1, -1, -1):
 				_add_room_at(start_index.x, row, ordered_rooms)
-		InputState.InputStateId.BOARD_PICK_ENGAGE_ROOMS_DOWN:
+		Direction.DOWN:
 			for row in range(row_count):
 				_add_room_at(start_index.x, row, ordered_rooms)
 		_:
@@ -212,14 +185,12 @@ func _sync_room_count() -> void:
 				push_error("Room scene did not instantiate a Room.")
 				continue
 			add_child(new_room)
-			_register_room_in_pick_engage_rooms_input_state(new_room)
 			rooms.append(new_room)
 	elif rooms.size() > target_size:
 		for i in range(rooms.size() - 1, target_size - 1, -1):
 			var room := rooms[i] as Room
 			if room != null:
 				engaging_rooms.erase(room)
-				_deregister_room_from_alternate_states(room)
 			if room.get_parent() == self:
 				remove_child(room)
 			room.queue_free()
@@ -287,38 +258,6 @@ func _add_room_at(column: int, row: int, target: Array[Room]) -> void:
 	var room := rooms[linear_index] as Room
 	if room != null:
 		target.append(room)
-	
-	
-func _register_room_in_pick_engage_rooms_input_state(room: Room) -> void:
-	for state in _pick_engage_rooms_input_states.values():
-		state.register_mouse_button_event_handler(MOUSE_BUTTON_LEFT, room.area, _on_pick_engage_rooms_mouse_left_click_room)
-
-	
-func _on_pick_engage_rooms_mouse_right_click():
-	InputManager.pop_input_state()
-	
-
-func _deregister_room_from_alternate_states(room: Room) -> void:
-	var room_area := room.get_node_or_null("Area2D") as Area2D
-	if room_area == null:
-		return
-
-	for state in _pick_engage_rooms_input_states.values():
-		var alternate_state := state as InputState
-		if alternate_state == null:
-			continue
-		alternate_state.deregister_mouse_button_event_handler(MOUSE_BUTTON_LEFT, room_area, _on_pick_engage_rooms_mouse_left_click_room)
-
-
-func _on_pick_engage_rooms_mouse_left_click_room(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
-	if not event.is_pressed():
-		return false
-	var room := collider.get_parent() as Room
-	if room == null:
-		return false
-	set_engaging_rooms_from(room)
-	InputManager.pop_input_state()
-	return true
 
 
 # On Start Button Pressed, for testing purposes only. This will resolve the battle in all engaging rooms and print the result to the console.

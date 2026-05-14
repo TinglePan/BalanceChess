@@ -25,7 +25,7 @@ func _enter_tree() -> void:
 
 
 func _exit_tree() -> void:
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	var input_state := InputManager.get_input_state(InputState.InputStateType.BOARD_NEUTRAL)
 	input_state.deregister_fallback_mouse_button_event_handler(DRAG_BUTTON, _on_drag_button_event)
 	input_state.deregister_mouse_motion_event_handler(DRAG_BUTTON, _on_mouse_motion_event)
 	input_state.deregister_fallback_mouse_button_event_handler(MouseButton.MOUSE_BUTTON_WHEEL_DOWN,
@@ -141,7 +141,7 @@ func clamp_view_center(center: Vector2, camera_zoom: Vector2) -> Vector2:
 
 
 func _register_mouse_input_handlers() -> void:
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	var input_state := InputManager.get_input_state(InputState.InputStateType.BOARD_NEUTRAL)
 	input_state.register_fallback_mouse_button_event_handler(DRAG_BUTTON, _on_drag_button_event)
 	input_state.register_mouse_motion_event_handler(DRAG_BUTTON, _on_mouse_motion_event)
 	input_state.register_fallback_mouse_button_event_handler(MouseButton.MOUSE_BUTTON_WHEEL_DOWN, _on_mouse_wheel_down_event)

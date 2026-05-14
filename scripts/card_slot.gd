@@ -72,6 +72,7 @@ func move_pawn_to_slot(target_slot: CardSlot) -> bool:
 		"to_slot": target_slot,
 		"from_pawn": pawn,
 	})
+	pawn.slot = target_slot
 	pawn = null
 	return true
 	

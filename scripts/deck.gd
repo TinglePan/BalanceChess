@@ -6,9 +6,11 @@ const ANIMATION_DURATION := 0.2
 const DEAL_CARD_BUTTON := MOUSE_BUTTON_LEFT
 
 var card_data_list := []
+var area: Area2D
 
 
 func _ready() -> void:
+	area = $Area2D as Area2D
 	update_count_label()
 	
 	
@@ -17,7 +19,7 @@ func _enter_tree() -> void:
 	
 	
 func _exit_tree() -> void:
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	var input_state := InputManager.get_input_state(InputState.InputStateType.BOARD_NEUTRAL)
 	input_state.deregister_mouse_button_event_handler(DEAL_CARD_BUTTON, $Area2D, _on_deal_card_button_event)
 
 
@@ -76,5 +78,5 @@ func _on_deal_card_button_event(_collider: CollisionObject2D, event: InputEventM
 	
 
 func _register_deal_card_input_handler():
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	var input_state := InputManager.get_input_state(InputState.InputStateType.BOARD_NEUTRAL)
 	input_state.register_mouse_button_event_handler(DEAL_CARD_BUTTON, $Area2D, _on_deal_card_button_event)

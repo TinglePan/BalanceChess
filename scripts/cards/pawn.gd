@@ -22,7 +22,7 @@ func _enter_tree() -> void:
 	
 
 func _exit_tree() -> void:
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	var input_state := InputManager.get_input_state(InputState.InputStateType.BOARD_NEUTRAL)
 	input_state.deregister_mouse_button_event_handler(INTERACT_BUTTON, $Area2D, _on_mouse_button_event)
 	MyLogger.print_formatted_log("Pawn: Deregistering mouse button event handler: %d" % $Area2D.get_instance_id())
 
@@ -53,8 +53,8 @@ func send_to_deck(deck: Deck, index: int = 0, duration: float = 0.2):
 
 
 func on_focused():
-	var action_phase_effects := _get_action_phase_effects()
-	interaction_menu.open(action_phase_effects)
+	var play_effects := _get_play_effects()
+	interaction_menu.open(play_effects)
 	
 	
 func on_unfocused():
@@ -66,10 +66,12 @@ func _on_sent_to_deck(deck: Deck, index: int):
 	queue_free()
 
 
-func _get_action_phase_effects() -> Array:
+func _get_play_effects() -> Array:
 	if logic == null:
 		return []
-	return logic.get_effects_for_trigger(CardEffect.TriggerType.PLAY_ACTION_PHASE)
+	var effects := logic.get_effects_for_trigger(CardEffect.TriggerType.PLAY_ACTION_PHASE)
+	effects += logic.get_effects_for_trigger(CardEffect.TriggerType.PLAY_THEN_TRIGGER_TURN_END)
+	return effects
 	
 	
 func _on_mouse_button_event(collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
@@ -83,5 +85,5 @@ func _on_mouse_button_event(collider: CollisionObject2D, event: InputEventMouseB
 
 
 func _register_mouse_input_handlers() -> void:
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	var input_state := InputManager.get_input_state(InputState.InputStateType.BOARD_NEUTRAL)
 	input_state.register_mouse_button_event_handler(INTERACT_BUTTON, $Area2D, _on_mouse_button_event)

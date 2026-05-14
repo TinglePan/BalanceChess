@@ -30,7 +30,7 @@ func _process(_delta: float) -> void:
 		
 		
 func _exit_tree() -> void:
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	var input_state := InputManager.get_input_state(InputState.InputStateType.BOARD_NEUTRAL)
 	input_state.deregister_fallback_mouse_button_event_handler(Card.DRAG_BUTTON, _on_drag_button_event)
 	
 
@@ -112,5 +112,5 @@ func _on_drag_button_event(_collider: CollisionObject2D, event: InputEventMouseB
 	
 
 func register_card_drag_input_handler():
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	var input_state := InputManager.get_input_state(InputState.InputStateType.BOARD_NEUTRAL)
 	input_state.register_fallback_mouse_button_event_handler(Card.DRAG_BUTTON, _on_drag_button_event)

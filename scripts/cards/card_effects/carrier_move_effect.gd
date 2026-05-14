@@ -1,4 +1,4 @@
-﻿extends GenericMoveEffect
+﻿extends MoveEffect
 class_name CarrierMoveEffect
 
 
@@ -13,82 +13,67 @@ func _init(_card_logic: CardLogic, args: Dictionary) -> void:
 
 
 func _play(payload: Dictionary = {}) -> void:
-	var pawn := card_logic.owner_node as Pawn
-	if pawn == null or not is_instance_valid(pawn):
-		return
+	moved_pawn = null
+	target_slot = null
+	carried_pawns.clear()
+	
+	_resolve_moved_pawn_spec(payload)
+		
+	var input_state := _resolve_target_slot_spec(payload, true)
+	
+	input_state = _resolve_carried_pawns_spec(payload, true, input_state)
+	
+	if input_state != null:
+		InputManager.push_input_state(input_state)
+	else:
+		_execute_played(payload)
 
-	var from_slot := pawn.slot
+
+func _execute(_payload: Dictionary = {}) -> void:
+	if moved_pawn == null:
+		_resolve_moved_pawn_spec(_payload)
+	if moved_pawn == null or not is_instance_valid(moved_pawn):
+		return
+	
+	var from_slot := moved_pawn.slot
 	if from_slot == null or not is_instance_valid(from_slot):
 		return
 
-	_input_state = InputState.new(
-		InputState.InputStateId.BOARD_MOVE_PICK_SLOT_CARRIER,
-		[0]
-	)
-	_register_input_handlers_for_candidate_slots(_input_state, pawn, from_slot, payload)
-	_register_input_handlers_for_candidate_pawns(_input_state, pawn, from_slot)
-
-	_input_state.register_fallback_mouse_button_event_handler(
-		MOUSE_BUTTON_RIGHT,
-		func(_collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
-			if not event.is_pressed():
-				return false
-			_exit_move_pick_state()
-			return true
-	)
-
-	InputManager.push_input_state(_input_state)
-
-
-func _execute(payload: Dictionary = {}) -> void:
-	var carrier_pawn := card_logic.owner_node as Pawn
-	if carrier_pawn == null or not is_instance_valid(carrier_pawn):
-		return
-
-	var from_slot := carrier_pawn.slot
-	if from_slot == null or not is_instance_valid(from_slot):
-		return
-
-	var target_slot := payload.get("target_slot", null) as CardSlot
 	var moved := from_slot.move_pawn_to_slot(target_slot)
 	if not moved:
 		return
+	
+	if carried_pawns.is_empty():
+		_resolve_carried_pawns_spec(_payload, false, null)
 
-	carrier_pawn.slot = target_slot
-	_move_carried_pawns(target_slot)
-	_exit_move_pick_state()
+	var lane := target_slot.lane
+	var next_slot := lane.next_slot(target_slot)
 
-
-func _exit_move_pick_state() -> void:
-	super._exit_move_pick_state()
+	for carried_pawn in carried_pawns:
+		if next_slot.is_empty():
+			var carried_pawn_from_slot := carried_pawn.slot
+			if carried_pawn_from_slot == null or not is_instance_valid(carried_pawn_from_slot):
+				continue
+	
+			carried_pawn_from_slot.move_pawn_to_slot(next_slot)
+			next_slot = lane.next_slot(next_slot)
+		else:
+			break
+	moved_pawn = null
+	target_slot = null
 	carried_pawns.clear()
 	
 	
-func _register_input_handlers_for_candidate_pawns(input_state: InputState, carrier_pawn: Pawn, from_slot: CardSlot) -> void:
-	var candidates: Array[Pawn] = []
-	var lane := from_slot.lane
-	for slot in lane.card_slots:
-		var candidate: Pawn = slot.pawn
-		if candidate == null or candidate == carrier_pawn:
-			continue
-		candidates.append(candidate)
-	for candidate_pawn in candidates:
-		input_state.register_mouse_button_event_handler(
-			MOUSE_BUTTON_LEFT,
-			candidate_pawn.area,
-			func(_collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
-				if not event.is_pressed():
-					return false
-				_toggle_carried_pawn(candidate_pawn)
-				return true
-		)
+func _on_exit_input_state():
+	super._on_exit_input_state()
+	carried_pawns.clear()
+	
 
-
-func _toggle_carried_pawn(candidate_pawn: Pawn) -> void:
-	if candidate_pawn == null or not is_instance_valid(candidate_pawn):
+func _on_pick_pawn(pawn: Pawn, _input_state: ConfirmableInputState, _payload: Dictionary) -> void:
+	if pawn == null or not is_instance_valid(pawn):
 		return
 
-	var existing_index := carried_pawns.find(candidate_pawn)
+	var existing_index := carried_pawns.find(pawn)
 	if existing_index != -1:
 		carried_pawns.remove_at(existing_index)
 		return
@@ -96,27 +81,44 @@ func _toggle_carried_pawn(candidate_pawn: Pawn) -> void:
 	if carry_capacity <= 0 or carried_pawns.size() >= carry_capacity:
 		return
 
-	carried_pawns.append(candidate_pawn)
-
-
-func _move_carried_pawns(target_slot: CardSlot) -> void:
-	var lane := target_slot.lane
-	var next_slot := lane.next_slot(target_slot)
-
-	for carried_pawn in carried_pawns:
-		if next_slot.is_empty():
-			var from_slot := carried_pawn.slot
-			if from_slot == null or not is_instance_valid(from_slot):
-				continue
-	
-			var moved := from_slot.move_pawn_to_slot(next_slot)
-			if not moved:
-				continue
-			carried_pawn.slot = next_slot
-			next_slot = lane.next_slot(next_slot)
+	carried_pawns.append(pawn)
+	if carried_pawns.size() >= carry_capacity:
+		_input_state.check("carried_pawns")
+		
+		
+func _resolve_carried_pawns_spec(payload: Dictionary, can_pick: bool, input_state: ConfirmableInputState) -> ConfirmableInputState:
+	var carried_pawns_spec := target_specs_by_key.get("carried_pawns", null) as CardEffectTargetSpec
+	if carried_pawns_spec == null:
+		push_warning("MoveEffect: missing target spec for carried_pawns")
+		return
+	if carried_pawns_spec.targeting_mode == CardEffectTargetSpec.TargetingMode.COMPUTE or carried_pawns_spec.targeting_mode == CardEffectTargetSpec.TargetingMode.COMPUTE_AND_PICK:
+		carried_pawns = carried_pawns_spec.target_selector.call(self, payload)
+	if (carried_pawns_spec.targeting_mode == CardEffectTargetSpec.TargetingMode.PICK or carried_pawns_spec.targeting_mode == CardEffectTargetSpec.TargetingMode.COMPUTE_AND_PICK) and can_pick:
+		# NOTE: if target slot is picked, the input state is supposed to be not null, and the carried_pawns check will not be added. This is intended.
+		if input_state == null:
+			input_state = _create_select_input_state(payload, MultiLatch.new(["carried_pawns"]))
+		var candidate_pawns: Array
+		if carried_pawns_spec.candidate_selector != null and carried_pawns_spec.candidate_selector.is_valid():
+			var candidate_pawns_value = carried_pawns_spec.candidate_selector.call(self, payload)
+			if candidate_pawns_value is Array:
+				candidate_pawns = candidate_pawns_value
 		else:
-			break
+			candidate_pawns = _default_candidate_pawns_selector()
+		input_state = _add_select_targets_input_state(candidate_pawns, _on_pick_pawn, payload, input_state)
+		return input_state
+	return null
 
 
+func _default_candidate_pawns_selector() -> Array[Pawn]:
+	var candidate_pawns := []
+	var from_slot := moved_pawn.slot
+	if from_slot == null or not is_instance_valid(from_slot):
+		return candidate_pawns
 
-
+	var from_lane := from_slot.lane
+	for slot in from_lane.card_slots:
+		if not slot.is_empty():
+			var slot_pawn := slot.pawn
+			if slot_pawn != null and is_instance_valid(slot_pawn) and slot_pawn != moved_pawn:
+				candidate_pawns.append(slot_pawn)
+	return candidate_pawns

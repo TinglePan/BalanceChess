@@ -20,7 +20,10 @@ var player_board_data: PlayerBoardData
 func _ready() -> void:
 	var canvas_layer_id := $CanvasLayer.get_instance_id()
 	InputManager.ui_canvas_instance_id = canvas_layer_id
-	var neutral_input_state := InputState.new(InputState.InputStateId.BOARD_NEUTRAL, [0, canvas_layer_id])
+	var neutral_input_state := InputState.new(
+		InputState.InputStateType.BOARD_NEUTRAL,
+		{"canvas_id_list" : [0, canvas_layer_id]}
+	)
 	InputManager.register_input_state(neutral_input_state)
 	
 	
@@ -44,7 +47,7 @@ func game_start() -> void:
 	if main_camera != null:
 		# Defer to ensure field nodes are fully laid out before fitting camera.
 		main_camera.call_deferred("apply_initial_fit_zoom")
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	var input_state := InputManager.get_input_state(InputState.InputStateType.BOARD_NEUTRAL)
 	MyLogger.print_formatted_log("Board: Pushing input state: %d" % input_state.id)
 	InputManager.push_input_state(input_state)
 	level_start()

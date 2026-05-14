@@ -32,7 +32,7 @@ func _enter_tree() -> void:
 
 	
 func _exit_tree() -> void:
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	var input_state := InputManager.get_input_state(InputState.InputStateType.BOARD_NEUTRAL)
 	input_state.deregister_mouse_button_event_handler(DRAG_BUTTON, $Area2D, _on_mouse_button_event)
 	
 
@@ -88,5 +88,5 @@ func _on_mouse_button_event(_collider: CollisionObject2D, event: InputEventMouse
 	
 	
 func _register_mouse_input_handlers() -> void:
-	var input_state := InputManager.get_input_state(InputState.InputStateId.BOARD_NEUTRAL)
+	var input_state := InputManager.get_input_state(InputState.InputStateType.BOARD_NEUTRAL)
 	input_state.register_mouse_button_event_handler(DRAG_BUTTON, $Area2D, _on_mouse_button_event)

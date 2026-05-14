@@ -2,14 +2,10 @@ extends RefCounted
 class_name InputState
 
 
-enum InputStateId {
+enum InputStateType {
 	BOARD_NEUTRAL,
-	BOARD_PICK_ENGAGE_ROOMS_UP,
-	BOARD_PICK_ENGAGE_ROOMS_DOWN,
-	BOARD_PICK_ENGAGE_ROOMS_LEFT,
-	BOARD_PICK_ENGAGE_ROOMS_RIGHT,
-	BOARD_MOVE_PICK_SLOT,
-	BOARD_MOVE_PICK_SLOT_CARRIER,
+	BOARD_PICK_ENGAGE_ROOMS,
+	BOARD_PICK_SLOTS_PAWNS
 }
 
 enum InputEventId {
@@ -36,15 +32,21 @@ var event_handlers := {
 	}
 }
 
-var id: InputStateId = InputStateId.BOARD_NEUTRAL
+var id: InputStateType = InputStateType.BOARD_NEUTRAL
+var alternate_mouse_cursor: Texture2D
+var on_enter_callback: Callable
+var on_exit_callback: Callable
 var canvas_id_list: Array[int]
-var alternate_mouse_cursor: Texture2D = null
+var custom_data: Dictionary = {}
 
 
-func _init(_id: InputStateId, _canvas_id_list: Array[int], _alternate_mouse_cursor: Texture2D = null) -> void:
+func _init(_id: InputStateType, _args: Dictionary = {}) -> void:
 	id = _id
-	canvas_id_list = _canvas_id_list
-	alternate_mouse_cursor = _alternate_mouse_cursor
+	alternate_mouse_cursor = _args.get("alternate_mouse_cursor", null)
+	on_enter_callback = _args.get("on_enter_callback", Callable())
+	on_exit_callback = _args.get("on_exit_callback", Callable())
+	canvas_id_list = _args.get("canvas_id_list", [0])
+	custom_data = _args.get("custom_data", {})
 
 
 func register_mouse_button_event_handler(button_index: int, collider: CollisionObject2D = null, handler: Callable = Callable()) -> void:
@@ -120,11 +122,15 @@ func deregister_mouse_motion_event_handler(button_index: int, handler: Callable 
 func on_enter() -> void:
 	if alternate_mouse_cursor != null:
 		Input.set_custom_mouse_cursor(alternate_mouse_cursor)
+	if on_enter_callback != null and on_enter_callback.is_valid():
+		on_enter_callback.call()
 	
 	
 func on_exit() -> void:
 	if alternate_mouse_cursor != null:
 		Input.set_custom_mouse_cursor(null)
+	if on_exit_callback != null and on_exit_callback.is_valid():
+		on_exit_callback.call()
 
 
 func dispatch_mouse_button_event(event: InputEventMouseButton) -> void:
@@ -132,7 +138,6 @@ func dispatch_mouse_button_event(event: InputEventMouseButton) -> void:
 		var handlers_for_button: Dictionary = event_handlers[InputEventId.MOUSE_BUTTON][event.button_index]
 		if handlers_for_button.is_empty():
 			return
-			
 		var colliders := InputManager.raycast_colliders_sorted(event.position, canvas_id_list, InputManager.DEFAULT_COLLISION_LAYER)
 		for collider in colliders:
 			var collider_id := collider.get_instance_id()
