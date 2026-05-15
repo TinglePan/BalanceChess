@@ -11,11 +11,15 @@ var pawn_scene := preload("res://scenes/Pawn.tscn") as PackedScene
 var lane: Lane
 var area: Area2D
 var pawn: Pawn
+var is_picked: bool
+var pick_indicator: Sprite2D
 
 
 func _ready() -> void:
 	lane = get_parent() as Lane
 	area = $Area2D as Area2D
+	pick_indicator = $PickIndicator as Sprite2D
+	unpick()
 	
 	
 func is_empty() -> bool:
@@ -89,6 +93,16 @@ func send_pawn_to_deck(deck: Deck, index: int = 0, animation_duration: float = A
 	})
 	pawn = null
 
+
+func pick():
+	is_picked = true
+	pick_indicator.visible = true
+	
+	
+func unpick():
+	is_picked = false
+	pick_indicator.visible = false
+	
 
 func coordinates() -> Array:
 	return [lane.room.coordinates(), lane.side, lane.slot_index(self)]

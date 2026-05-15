@@ -5,15 +5,20 @@ class_name Pawn
 const INTERACT_BUTTON := MOUSE_BUTTON_LEFT
 
 
-var slot: CardSlot = null
-var logic: CardLogic = null
-@onready var interaction_menu: PawnInteractionMenu = $InteractionMenu
+var slot: CardSlot
+var logic: CardLogic
+var interaction_menu: PawnInteractionMenu
 var area: Area2D
+var is_picked: bool
+var pick_indicator: Sprite2D
 
 
 func _ready() -> void:
 	slot = get_parent() as CardSlot
 	area = $Area2D as Area2D
+	interaction_menu = $InteractionMenu as PawnInteractionMenu
+	pick_indicator = $PickIndicator as Sprite2D
+	unpick()
 	
 	
 func _enter_tree() -> void:
@@ -59,6 +64,16 @@ func on_focused():
 	
 func on_unfocused():
 	interaction_menu.close()
+	
+	
+func pick():
+	is_picked = true
+	pick_indicator.visible = true
+	
+	
+func unpick():
+	is_picked = false
+	pick_indicator.visible = false
 
 	
 func _on_sent_to_deck(deck: Deck, index: int):

@@ -84,6 +84,7 @@ func _create_select_input_state(payload, confirm_checks: MultiLatch = null) -> I
 		InputState.InputStateType.BOARD_PICK_SLOTS_PAWNS,
 		{
 			"confirm_checks": confirm_checks,
+			"on_enter_callback": _on_enter_input_state,
 			"on_exit_callback": _on_exit_input_state,
 			"on_confirm_callback": _gen_on_confirm_input_state_handler(payload),
 		}
@@ -111,6 +112,10 @@ func _add_select_targets_input_state(targets: Array, select_callback: Callable, 
 				return true
 		)
 	return input_state
+	
+	
+func _on_enter_input_state():
+	pass
 
 
 func _on_exit_input_state():

@@ -64,8 +64,18 @@ func _execute(_payload: Dictionary = {}) -> void:
 	carried_pawns.clear()
 	
 	
+func _on_enter_input_state():
+	super._on_enter_input_state()
+	for carried_pawn in carried_pawns:
+		if carried_pawn != null and is_instance_valid(carried_pawn):
+			carried_pawn.pick()
+	
+	
 func _on_exit_input_state():
 	super._on_exit_input_state()
+	for carried_pawn in carried_pawns:
+		if carried_pawn != null and is_instance_valid(carried_pawn):
+			carried_pawn.unpick()
 	carried_pawns.clear()
 	
 
@@ -75,12 +85,14 @@ func _on_pick_pawn(pawn: Pawn, _input_state: ConfirmableInputState, _payload: Di
 
 	var existing_index := carried_pawns.find(pawn)
 	if existing_index != -1:
+		pawn.unpick()
 		carried_pawns.remove_at(existing_index)
 		return
 
 	if carry_capacity <= 0 or carried_pawns.size() >= carry_capacity:
 		return
-
+		
+	pawn.pick()
 	carried_pawns.append(pawn)
 	if carried_pawns.size() >= carry_capacity:
 		_input_state.check("carried_pawns")

@@ -101,7 +101,7 @@ func focus_pawn(pawn: Pawn):
 		pawn_focusing.on_unfocused()
 	pawn.on_focused()
 	pawn_focusing = pawn
-
+	
 
 func _on_drag_button_event(_collider: CollisionObject2D, event: InputEventMouseButton) -> bool:
 	if not event.pressed:

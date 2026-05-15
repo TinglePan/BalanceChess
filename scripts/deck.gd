@@ -7,10 +7,14 @@ const DEAL_CARD_BUTTON := MOUSE_BUTTON_LEFT
 
 var card_data_list := []
 var area: Area2D
+var is_picked: bool
+var pick_indicator: Sprite2D
 
 
 func _ready() -> void:
 	area = $Area2D as Area2D
+	pick_indicator = $PickIndicator as Sprite2D
+	unpick()
 	update_count_label()
 	
 	
@@ -64,7 +68,17 @@ func deal_card(target: Node2D, index: int = 0) -> void:
 		var card = GameManager.board.card_manager.create_card_at(card_data, global_position)
 		target.drop(card, ANIMATION_DURATION)
 	update_count_label()
-
+	
+	
+func pick():
+	is_picked = true
+	pick_indicator.visible = true
+	
+	
+func unpick():
+	is_picked = false
+	pick_indicator.visible = false
+	
 
 func update_count_label():
 	$Label.text = str(card_data_list.size())

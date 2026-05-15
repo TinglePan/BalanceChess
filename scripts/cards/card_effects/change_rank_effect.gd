@@ -82,15 +82,27 @@ func _on_pick_pawn(pawn: Pawn, _input_state: InputState, payload: Dictionary) ->
 	if not allow_repeat_targets:
 		var existing_index := target_pawns.find(pawn)
 		if existing_index != -1:
+			pawn.unpick()
 			target_pawns.remove_at(existing_index)
 			return
 	if max_target_pawns > 0 and target_pawns.size() >= max_target_pawns:
 		return
+	pawn.pick()
 	target_pawns.append(pawn)
 	if target_pawns.size() >= max_target_pawns:
 		_input_state.check("target_pawns")
 
 
+func _on_enter_input_state():
+	super._on_enter_input_state()
+	for target_pawn in target_pawns:
+		if target_pawn != null and is_instance_valid(target_pawn):
+			target_pawn.pick()
+
+
 func _on_exit_input_state():
 	super._on_exit_input_state()
+	for target_pawn in target_pawns:
+		if target_pawn != null and is_instance_valid(target_pawn):
+			target_pawn.unpick()
 	target_pawns.clear()
